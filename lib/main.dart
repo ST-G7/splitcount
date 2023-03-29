@@ -1,50 +1,37 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:splitcount/core/services/expense_service.dart';
+import 'package:splitcount/core/services/inmemory_expense_service.dart';
 
+import 'core/models/expense.dart';
+
+// Save an boolean value to 'repeat' key.
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
 
-class ExpenseEntry {
-  final String id;
-  final String? emoji;
-  final String user;
-  final String title;
-  final double amount;
-  final String currency;
+const kDarkModePreferencesKey = 'dark-mode';
 
-  const ExpenseEntry(this.id, this.user, this.title, this.amount,
-      {this.emoji, this.currency = "€"});
+setSelectedTheme(ThemeMode mode) async {
+  final preferences = await SharedPreferences.getInstance();
+
+  if (mode == ThemeMode.dark) {
+    await preferences.setBool(kDarkModePreferencesKey, true);
+  } else {
+    await preferences.remove(kDarkModePreferencesKey);
+  }
+
+  selectedTheme.add(mode);
 }
 
-final demoExpenseList = [
-  const ExpenseEntry("1", "Max", "Flight (Rio)", 2.000),
-  const ExpenseEntry("2", "Lisa", "Car", 12.000, emoji: "🏎️"),
-  const ExpenseEntry("3", "John", "Kebab", 4.50, emoji: "🥙"),
-  const ExpenseEntry("4", "Anna", "Cafe & Biscuits", 7.80),
-  const ExpenseEntry("5", "Ludwig", "Restaurant", 76.99)
-];
+final IExpenseService _expenseService = InMemoryExpenseService();
 
-BehaviorSubject<List<ExpenseEntry>> expenses =
-    BehaviorSubject.seeded(demoExpenseList);
+void main() async {
+  final preferences = await SharedPreferences.getInstance();
+  var isDarkMode = preferences.getBool(kDarkModePreferencesKey) ?? false;
+  selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
 
-void addExpense(ExpenseEntry entry, {int? index}) {
-  var newExpenses = List<ExpenseEntry>.from(expenses.value);
-
-  newExpenses.insert(
-      min(index ?? newExpenses.length, newExpenses.length - 1), entry);
-  expenses.add(newExpenses);
-}
-
-void removeExpense(int index) {
-  var newExpenses = List<ExpenseEntry>.from(expenses.value);
-  newExpenses.removeAt(index);
-  expenses.add(newExpenses);
-}
-
-void main() {
   runApp(const MyApp());
 }
 
@@ -57,7 +44,7 @@ class MyApp extends StatelessWidget {
         stream: selectedTheme.stream,
         builder: (context, snapshot) {
           return MaterialApp(
-              title: 'Flutter Demo',
+              title: 'Splitcount',
               theme: ThemeData(
                   brightness: Brightness.light, primarySwatch: Colors.green),
               darkTheme: ThemeData(
@@ -85,22 +72,31 @@ class _MyHomePageState extends State<MyHomePage> {
     final isLightMode = selectedTheme.value == ThemeMode.light;
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          leading: IconButton(
+      appBar: AppBar(
+        title: Text(widget.title),
+        leading: IconButton(
             icon: Icon(isLightMode
                 ? Icons.dark_mode_rounded
                 : Icons.light_mode_rounded),
             tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-            onPressed: () {
-              setState(() {
-                selectedTheme
-                    .add(isLightMode ? ThemeMode.dark : ThemeMode.light);
-              });
-            },
-          ),
-        ),
-        body: const ExpenseList());
+            onPressed: () async {
+              await setSelectedTheme(
+                  isLightMode ? ThemeMode.dark : ThemeMode.light);
+              setState(() => {});
+            }),
+      ),
+      body: const ExpenseList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateExpensePage()),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
 
@@ -114,8 +110,8 @@ class ExpenseList extends StatefulWidget {
 class _ExpenseListState extends State<ExpenseList> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<ExpenseEntry>>(
-        stream: expenses,
+    return StreamBuilder<List<Expense>>(
+        stream: _expenseService.getExpenses(),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
             return ListView.separated(
@@ -127,22 +123,23 @@ class _ExpenseListState extends State<ExpenseList> {
                 itemCount: snapshot.data!.length,
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
-                  final entry = snapshot.data![index];
+                  final expense = snapshot.data![index];
 
                   return Dismissible(
-                    key: Key(entry.id),
+                    key: Key(expense.id),
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) {
-                      removeExpense(index);
+                      _expenseService.deleteExpense(expense);
 
                       // Then show a snackbar.
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Entry ${entry.title} was delete'),
+                        content: Text('Entry ${expense.title} was delete'),
                         action: SnackBarAction(
                           label: 'Undo',
                           onPressed: () {
-                            addExpense(entry, index: index);
+                            _expenseService.createExpense(expense,
+                                index: index);
                           },
                         ),
                       ));
@@ -153,24 +150,19 @@ class _ExpenseListState extends State<ExpenseList> {
                           height: 40.0,
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColorLight,
-                              border: Border.all(
-                                width: 2,
-                                color: Theme.of(context).primaryColor,
-                              )),
+                              color: Theme.of(context).primaryColorLight),
                           child: Align(
-                            alignment: Alignment
-                                .center, // Align however you like (i.e .centerRight, centerLeft)
+                            alignment: Alignment.center,
                             child: Text(
                               style: const TextStyle(fontSize: 22),
-                              entry.emoji ?? "💲",
+                              expense.emoji ?? "💲",
                               textAlign: TextAlign.center,
                             ),
                           )),
-                      title: Text(entry.title),
-                      subtitle: Text("Paid by ${entry.user}"),
+                      title: Text(expense.title),
+                      subtitle: Text("paid by ${expense.user}"),
                       trailing: Text(
-                          "${entry.amount.toStringAsFixed(2)} ${entry.currency}"),
+                          "${expense.amount.toStringAsFixed(2)} ${expense.currency}"),
                     ),
                   );
                 });
@@ -178,5 +170,123 @@ class _ExpenseListState extends State<ExpenseList> {
             return const Text("No data available");
           }
         });
+  }
+}
+
+class CreateExpensePage extends StatefulWidget {
+  const CreateExpensePage({super.key});
+
+  @override
+  State<CreateExpensePage> createState() => _CreateExpensePageState();
+}
+
+class _CreateExpensePageState extends State<CreateExpensePage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _userInput = TextEditingController();
+  final TextEditingController _titleInput = TextEditingController();
+  final TextEditingController _amountInput = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Create Expense'),
+          ),
+          body: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    autofocus: true,
+                    controller: _titleInput,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please provide a valid title';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(labelText: 'Title'),
+                  ),
+                  TextFormField(
+                    controller: _amountInput,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.allow(
+                          RegExp('[0-9]+(,[0-9][0-9])?'))
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a valid value';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Amount',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _userInput,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter a user';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(labelText: 'Person'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            final scaffoldMessenger =
+                                ScaffoldMessenger.of(context);
+                            final navigator = Navigator.of(context);
+
+                            final createdExpense =
+                                await _expenseService.createExpense(Expense(
+                                    _userInput.text,
+                                    _titleInput.text,
+                                    double.parse(_amountInput.text)));
+
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Created ${createdExpense.title}'),
+                                action: SnackBarAction(
+                                    label: 'Undo',
+                                    onPressed: () async => {
+                                          await _expenseService
+                                              .deleteExpense(createdExpense)
+                                        }),
+                              ),
+                            );
+
+                            navigator.pop();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).primaryIconTheme.color,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          elevation: 1.0,
+                        ),
+                        child: const Text('Create Entry'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
+    );
   }
 }
