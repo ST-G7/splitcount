@@ -6,11 +6,11 @@ import '../models/expense.dart';
 import 'expense_service.dart';
 
 final demoExpenseList = [
-  Expense("Max", "Flight (Rio)", 2.000),
-  Expense("Lisa", "Car", 12.000, emoji: "🏎️"),
-  Expense("John", "Kebab", 4.50, emoji: "🥙"),
-  Expense("Anna", "Cafe & Biscuits", 7.80),
-  Expense("Ludwig", "Restaurant", 76.99)
+  Expense(0, "Max", "Flight (Rio)", 2.000),
+  Expense(1, "Lisa", "Car", 12.000, emoji: "🏎️"),
+  Expense(2, "John", "Kebab", 4.50, emoji: "🥙"),
+  Expense(3, "Anna", "Cafe & Biscuits", 7.80),
+  Expense(4, "Ludwig", "Restaurant", 76.99)
 ];
 
 class InMemoryExpenseService implements IExpenseService {
@@ -18,14 +18,14 @@ class InMemoryExpenseService implements IExpenseService {
       BehaviorSubject.seeded(demoExpenseList);
 
   @override
-  Future<Expense> createExpense(Expense entry, {int? index}) {
+  Future<Expense> createExpense(Expense expense, {int? index}) {
     var newExpenses = List<Expense>.from(_expenses.value);
 
     newExpenses.insert(
-        min(index ?? newExpenses.length, newExpenses.length), entry);
+        min(index ?? newExpenses.length, newExpenses.length), expense);
     _expenses.add(newExpenses);
 
-    return Future.value(entry);
+    return Future.value(expense);
   }
 
   @override

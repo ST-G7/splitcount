@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitcount/core/services/expense_service.dart';
 import 'package:splitcount/core/services/inmemory_expense_service.dart';
+import 'package:splitcount/core/services/local/local_expense_service.dart';
 
 import 'core/models/expense.dart';
 
@@ -25,13 +28,13 @@ setSelectedTheme(ThemeMode mode) async {
   selectedTheme.add(mode);
 }
 
-final IExpenseService _expenseService = InMemoryExpenseService();
+final IExpenseService _expenseService = LocalExpenseService();
+// final IExpenseService _expenseService = InMemoryExpenseService();
 
 void main() async {
   final preferences = await SharedPreferences.getInstance();
   var isDarkMode = preferences.getBool(kDarkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
-
   runApp(const MyApp());
 }
 
@@ -126,7 +129,7 @@ class _ExpenseListState extends State<ExpenseList> {
                   final expense = snapshot.data![index];
 
                   return Dismissible(
-                    key: Key(expense.id),
+                    key: Key(expense.id.toString()),
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) {
@@ -253,6 +256,7 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
 
                             final createdExpense =
                                 await _expenseService.createExpense(Expense(
+                                    Random().nextInt(10000),
                                     _userInput.text,
                                     _titleInput.text,
                                     double.parse(_amountInput.text)));
