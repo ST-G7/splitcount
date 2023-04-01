@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitcount/core/services/expense_service.dart';
-import 'package:splitcount/core/services/inmemory_expense_service.dart';
-import 'package:splitcount/core/services/local/local_expense_service.dart';
 import 'package:splitcount/core/services/remote_expense_service.dart';
 
 import 'core/models/expense.dart';
@@ -30,7 +28,6 @@ setSelectedTheme(ThemeMode mode) async {
 }
 
 final IExpenseService _expenseService = RemoteExpenseService();
-// final IExpenseService _expenseService = LocalExpenseService();
 // final IExpenseService _expenseService = InMemoryExpenseService();
 
 void main() async {
