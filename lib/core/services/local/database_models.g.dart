@@ -32,13 +32,18 @@ const ExpenseDbEntrySchema = CollectionSchema(
       name: r'emoji',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(
+    r'id': PropertySchema(
       id: 3,
+      name: r'id',
+      type: IsarType.string,
+    ),
+    r'title': PropertySchema(
+      id: 4,
       name: r'title',
       type: IsarType.string,
     ),
     r'user': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'user',
       type: IsarType.string,
     )
@@ -47,7 +52,7 @@ const ExpenseDbEntrySchema = CollectionSchema(
   serialize: _expenseDbEntrySerialize,
   deserialize: _expenseDbEntryDeserialize,
   deserializeProp: _expenseDbEntryDeserializeProp,
-  idName: r'id',
+  idName: r'isarId',
   indexes: {},
   links: {},
   embeddedSchemas: {},
@@ -70,6 +75,7 @@ int _expenseDbEntryEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.user.length * 3;
   return bytesCount;
@@ -84,8 +90,9 @@ void _expenseDbEntrySerialize(
   writer.writeDouble(offsets[0], object.amount);
   writer.writeString(offsets[1], object.currency);
   writer.writeString(offsets[2], object.emoji);
-  writer.writeString(offsets[3], object.title);
-  writer.writeString(offsets[4], object.user);
+  writer.writeString(offsets[3], object.id);
+  writer.writeString(offsets[4], object.title);
+  writer.writeString(offsets[5], object.user);
 }
 
 ExpenseDbEntry _expenseDbEntryDeserialize(
@@ -98,9 +105,9 @@ ExpenseDbEntry _expenseDbEntryDeserialize(
   object.amount = reader.readDouble(offsets[0]);
   object.currency = reader.readString(offsets[1]);
   object.emoji = reader.readStringOrNull(offsets[2]);
-  object.id = id;
-  object.title = reader.readString(offsets[3]);
-  object.user = reader.readString(offsets[4]);
+  object.id = reader.readString(offsets[3]);
+  object.title = reader.readString(offsets[4]);
+  object.user = reader.readString(offsets[5]);
   return object;
 }
 
@@ -121,13 +128,15 @@ P _expenseDbEntryDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
 Id _expenseDbEntryGetId(ExpenseDbEntry object) {
-  return object.id;
+  return object.isarId;
 }
 
 List<IsarLinkBase<dynamic>> _expenseDbEntryGetLinks(ExpenseDbEntry object) {
@@ -135,13 +144,11 @@ List<IsarLinkBase<dynamic>> _expenseDbEntryGetLinks(ExpenseDbEntry object) {
 }
 
 void _expenseDbEntryAttach(
-    IsarCollection<dynamic> col, Id id, ExpenseDbEntry object) {
-  object.id = id;
-}
+    IsarCollection<dynamic> col, Id id, ExpenseDbEntry object) {}
 
 extension ExpenseDbEntryQueryWhereSort
     on QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QWhere> {
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhere> anyId() {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhere> anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -150,70 +157,68 @@ extension ExpenseDbEntryQueryWhereSort
 
 extension ExpenseDbEntryQueryWhere
     on QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QWhereClause> {
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> idEqualTo(
-      Id id) {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> isarIdEqualTo(
+      Id isarId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
+        lower: isarId,
+        upper: isarId,
       ));
     });
   }
 
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause>
+      isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
+              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
+              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
+              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
+              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
             );
       }
     });
   }
 
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause>
+      isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
+        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
       );
     });
   }
 
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause>
+      isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
+        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
       );
     });
   }
 
-  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterWhereClause> isarIdBetween(
+    Id lowerIsarId,
+    Id upperIsarId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
+        lower: lowerIsarId,
         includeLower: includeLower,
-        upper: upperId,
+        upper: upperIsarId,
         includeUpper: includeUpper,
       ));
     });
@@ -579,44 +584,180 @@ extension ExpenseDbEntryQueryFilter
   }
 
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
       idGreaterThan(
-    Id value, {
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'id',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
       idLessThan(
-    Id value, {
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'id',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition> idBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      idStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      idEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      idContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition> idMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'id',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      idIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      idIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'id',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      isarIdEqualTo(Id value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isarId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      isarIdGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'isarId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      isarIdLessThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'isarId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterFilterCondition>
+      isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -624,7 +765,7 @@ extension ExpenseDbEntryQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
+        property: r'isarId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -952,6 +1093,18 @@ extension ExpenseDbEntryQuerySortBy
     });
   }
 
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy> sortById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy> sortByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1029,6 +1182,19 @@ extension ExpenseDbEntryQuerySortThenBy
     });
   }
 
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy> thenByIsarId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isarId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy>
+      thenByIsarIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isarId', Sort.desc);
+    });
+  }
+
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1076,6 +1242,13 @@ extension ExpenseDbEntryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QDistinct> distinctById(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QDistinct> distinctByTitle(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1093,9 +1266,9 @@ extension ExpenseDbEntryQueryWhereDistinct
 
 extension ExpenseDbEntryQueryProperty
     on QueryBuilder<ExpenseDbEntry, ExpenseDbEntry, QQueryProperty> {
-  QueryBuilder<ExpenseDbEntry, int, QQueryOperations> idProperty() {
+  QueryBuilder<ExpenseDbEntry, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
+      return query.addPropertyName(r'isarId');
     });
   }
 
@@ -1114,6 +1287,12 @@ extension ExpenseDbEntryQueryProperty
   QueryBuilder<ExpenseDbEntry, String?, QQueryOperations> emojiProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'emoji');
+    });
+  }
+
+  QueryBuilder<ExpenseDbEntry, String, QQueryOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'id');
     });
   }
 

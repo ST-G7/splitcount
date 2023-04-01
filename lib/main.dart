@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitcount/core/services/expense_service.dart';
 import 'package:splitcount/core/services/inmemory_expense_service.dart';
 import 'package:splitcount/core/services/local/local_expense_service.dart';
+import 'package:splitcount/core/services/remote_expense_service.dart';
 
 import 'core/models/expense.dart';
 
@@ -28,7 +29,8 @@ setSelectedTheme(ThemeMode mode) async {
   selectedTheme.add(mode);
 }
 
-final IExpenseService _expenseService = LocalExpenseService();
+final IExpenseService _expenseService = RemoteExpenseService();
+// final IExpenseService _expenseService = LocalExpenseService();
 // final IExpenseService _expenseService = InMemoryExpenseService();
 
 void main() async {
@@ -132,16 +134,16 @@ class _ExpenseListState extends State<ExpenseList> {
                     key: Key(expense.id.toString()),
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
-                    onDismissed: (direction) {
-                      _expenseService.deleteExpense(expense);
+                    onDismissed: (direction) async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      await _expenseService.deleteExpense(expense);
 
-                      // Then show a snackbar.
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      messenger.showSnackBar(SnackBar(
                         content: Text('Entry ${expense.title} was delete'),
                         action: SnackBarAction(
                           label: 'Undo',
-                          onPressed: () {
-                            _expenseService.createExpense(expense,
+                          onPressed: () async {
+                            await _expenseService.createExpense(expense,
                                 index: index);
                           },
                         ),
@@ -256,7 +258,9 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
 
                             final createdExpense =
                                 await _expenseService.createExpense(Expense(
-                                    Random().nextInt(10000),
+                                    Random()
+                                        .nextInt(10000000)
+                                        .toString(), // TODO: This should be handled better
                                     _userInput.text,
                                     _titleInput.text,
                                     double.parse(_amountInput.text)));

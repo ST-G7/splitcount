@@ -6,7 +6,10 @@ part 'database_models.g.dart';
 
 @collection
 class ExpenseDbEntry {
-  late Id id = Isar.autoIncrement;
+  late String id;
+
+  Id get isarId => fastHash(id);
+
   String? emoji;
   late String user;
   late String title;
@@ -27,4 +30,20 @@ class ExpenseDbEntry {
   Expense toExpense() {
     return Expense(id, user, title, amount);
   }
+}
+
+//https://isar.dev/recipes/string_ids.html
+int fastHash(String string) {
+  var hash = 0xcbf29ce484222325;
+
+  var i = 0;
+  while (i < string.length) {
+    final codeUnit = string.codeUnitAt(i++);
+    hash ^= codeUnit >> 8;
+    hash *= 0x100000001b3;
+    hash ^= codeUnit & 0xFF;
+    hash *= 0x100000001b3;
+  }
+
+  return hash;
 }

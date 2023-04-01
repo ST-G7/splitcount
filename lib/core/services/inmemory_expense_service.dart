@@ -6,11 +6,11 @@ import '../models/expense.dart';
 import 'expense_service.dart';
 
 final demoExpenseList = [
-  Expense(0, "Max", "Flight (Rio)", 2.000),
-  Expense(1, "Lisa", "Car", 12.000, emoji: "🏎️"),
-  Expense(2, "John", "Kebab", 4.50, emoji: "🥙"),
-  Expense(3, "Anna", "Cafe & Biscuits", 7.80),
-  Expense(4, "Ludwig", "Restaurant", 76.99)
+  Expense("0", "Max", "Flight (Rio)", 2.000),
+  Expense("1", "Lisa", "Car", 12.000, emoji: "🏎️"),
+  Expense("2", "John", "Kebab", 4.50, emoji: "🥙"),
+  Expense("3", "Anna", "Cafe & Biscuits", 7.80),
+  Expense("4", "Ludwig", "Restaurant", 76.99)
 ];
 
 class InMemoryExpenseService implements IExpenseService {

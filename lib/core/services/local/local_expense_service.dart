@@ -28,7 +28,8 @@ class LocalExpenseService implements IExpenseService {
     final isar = await _db;
 
     await isar.writeTxn(() async {
-      await isar.expenseDbEntrys.delete(expense.id);
+      await isar.expenseDbEntrys
+          .delete(ExpenseDbEntry.fromExpense(expense).isarId);
     });
   }
 
