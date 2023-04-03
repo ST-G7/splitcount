@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:splitcount/core/services/expense_service.dart';
-import 'package:splitcount/core/services/remote_expense_service.dart';
+import 'package:splitcount/core/services/transaction_service.dart';
+import 'package:splitcount/core/services/remote_transaction_service.dart';
 
-import 'core/models/expense.dart';
+import 'core/models/transaction.dart';
 
-// Save an boolean value to 'repeat' key.
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
 
@@ -27,8 +26,8 @@ setSelectedTheme(ThemeMode mode) async {
   selectedTheme.add(mode);
 }
 
-final IExpenseService _expenseService = RemoteExpenseService();
-// final IExpenseService _expenseService = InMemoryExpenseService();
+final ITransactionService _transactionService = RemoteTransactionService();
+//final ITransactionService _transactionService = InMemoryTransactionService();
 
 void main() async {
   final preferences = await SharedPreferences.getInstance();
@@ -87,12 +86,13 @@ class _MyHomePageState extends State<MyHomePage> {
               setState(() => {});
             }),
       ),
-      body: const ExpenseList(),
+      body: const TransactionList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateExpensePage()),
+            MaterialPageRoute(
+                builder: (context) => const CreateTransactionPage()),
           );
         },
         backgroundColor: Colors.green,
@@ -102,18 +102,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class ExpenseList extends StatefulWidget {
-  const ExpenseList({super.key});
+class TransactionList extends StatefulWidget {
+  const TransactionList({super.key});
 
   @override
-  State<ExpenseList> createState() => _ExpenseListState();
+  State<TransactionList> createState() => _TransactionListState();
 }
 
-class _ExpenseListState extends State<ExpenseList> {
+class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Expense>>(
-        stream: _expenseService.getExpenses(),
+    return StreamBuilder<List<Transaction>>(
+        stream: _transactionService.getTransactions(),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
             return ListView.separated(
@@ -125,23 +125,23 @@ class _ExpenseListState extends State<ExpenseList> {
                 itemCount: snapshot.data!.length,
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
-                  final expense = snapshot.data![index];
+                  final transaction = snapshot.data![index];
 
                   return Dismissible(
-                    key: Key(expense.id.toString()),
+                    key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) async {
                       final messenger = ScaffoldMessenger.of(context);
-                      await _expenseService.deleteExpense(expense);
+                      await _transactionService.deleteTransaction(transaction);
 
                       messenger.showSnackBar(SnackBar(
-                        content: Text('Entry ${expense.title} was delete'),
+                        content: Text('Entry ${transaction.title} was delete'),
                         action: SnackBarAction(
                           label: 'Undo',
                           onPressed: () async {
-                            await _expenseService.createExpense(expense,
-                                index: index);
+                            await _transactionService
+                                .createTransaction(transaction, index: index);
                           },
                         ),
                       ));
@@ -157,14 +157,14 @@ class _ExpenseListState extends State<ExpenseList> {
                             alignment: Alignment.center,
                             child: Text(
                               style: const TextStyle(fontSize: 22),
-                              expense.emoji ?? "💲",
+                              transaction.emoji ?? "💲",
                               textAlign: TextAlign.center,
                             ),
                           )),
-                      title: Text(expense.title),
-                      subtitle: Text("paid by ${expense.user}"),
+                      title: Text(transaction.title),
+                      subtitle: Text("paid by ${transaction.user}"),
                       trailing: Text(
-                          "${expense.amount.toStringAsFixed(2)} ${expense.currency}"),
+                          "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
                     ),
                   );
                 });
@@ -175,14 +175,14 @@ class _ExpenseListState extends State<ExpenseList> {
   }
 }
 
-class CreateExpensePage extends StatefulWidget {
-  const CreateExpensePage({super.key});
+class CreateTransactionPage extends StatefulWidget {
+  const CreateTransactionPage({super.key});
 
   @override
-  State<CreateExpensePage> createState() => _CreateExpensePageState();
+  State<CreateTransactionPage> createState() => _CreateTransactionPageState();
 }
 
-class _CreateExpensePageState extends State<CreateExpensePage> {
+class _CreateTransactionPageState extends State<CreateTransactionPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _userInput = TextEditingController();
@@ -194,7 +194,7 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
     return Material(
       child: Scaffold(
           appBar: AppBar(
-            title: const Text('Create Expense'),
+            title: const Text('Create Transaction'),
           ),
           body: Form(
             key: _formKey,
@@ -253,8 +253,8 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                                 ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
 
-                            final createdExpense =
-                                await _expenseService.createExpense(Expense(
+                            final createdTransaction = await _transactionService
+                                .createTransaction(Transaction(
                                     Random()
                                         .nextInt(10000000)
                                         .toString(), // TODO: This should be handled better
@@ -265,12 +265,13 @@ class _CreateExpensePageState extends State<CreateExpensePage> {
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
                                 content:
-                                    Text('Created ${createdExpense.title}'),
+                                    Text('Created ${createdTransaction.title}'),
                                 action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async => {
-                                          await _expenseService
-                                              .deleteExpense(createdExpense)
+                                          await _transactionService
+                                              .deleteTransaction(
+                                                  createdTransaction)
                                         }),
                               ),
                             );
