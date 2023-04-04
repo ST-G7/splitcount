@@ -28,6 +28,7 @@ final ITransactionService _transactionService = RemoteTransactionService();
 //final ITransactionService _transactionService = InMemoryTransactionService();
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final preferences = await SharedPreferences.getInstance();
   var isDarkMode = preferences.getBool(darkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
@@ -125,8 +126,6 @@ class _TransactionListState extends State<TransactionList> {
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final transaction = snapshot.data![index];
-
-                  //return Text("HALLO");
                   return Dismissible(
                     key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
@@ -147,25 +146,24 @@ class _TransactionListState extends State<TransactionList> {
                       ));
                     },
                     child: ListTile(
-                      leading: Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColorLight),
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              style: const TextStyle(fontSize: 22),
-                              transaction.emoji ?? "💲",
-                              textAlign: TextAlign.center,
-                            ),
-                          )),
-                      title: Text(transaction.title),
-                      subtitle: Text("paid by ${transaction.user}"),
-                      trailing: Text(
-                          "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                    ),
+                        leading: Container(
+                            width: 40.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).primaryColorLight),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                style: const TextStyle(fontSize: 22),
+                                transaction.emoji ?? "💲",
+                                textAlign: TextAlign.center,
+                              ),
+                            )),
+                        title: Text(transaction.title),
+                        subtitle: Text("paid by ${transaction.user}"),
+                        trailing: Text(
+                            "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}")),
                   );
                 });
           } else {
