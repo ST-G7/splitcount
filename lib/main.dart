@@ -1,26 +1,24 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:splitcount/core/services/transaction_service.dart';
-import 'package:splitcount/core/services/remote_transaction_service.dart';
 
+import 'core/services/transaction_service.dart';
+import 'core/services/remote_transaction_service.dart';
 import 'core/models/transaction.dart';
 
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
 
-const kDarkModePreferencesKey = 'dark-mode';
+const darkModePreferencesKey = 'dark-mode';
 
 setSelectedTheme(ThemeMode mode) async {
   final preferences = await SharedPreferences.getInstance();
 
   if (mode == ThemeMode.dark) {
-    await preferences.setBool(kDarkModePreferencesKey, true);
+    await preferences.setBool(darkModePreferencesKey, true);
   } else {
-    await preferences.remove(kDarkModePreferencesKey);
+    await preferences.remove(darkModePreferencesKey);
   }
 
   selectedTheme.add(mode);
@@ -31,8 +29,9 @@ final ITransactionService _transactionService = RemoteTransactionService();
 
 void main() async {
   final preferences = await SharedPreferences.getInstance();
-  var isDarkMode = preferences.getBool(kDarkModePreferencesKey) ?? false;
+  var isDarkMode = preferences.getBool(darkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
+
   runApp(const MyApp());
 }
 
@@ -127,6 +126,7 @@ class _TransactionListState extends State<TransactionList> {
                 itemBuilder: (_, index) {
                   final transaction = snapshot.data![index];
 
+                  //return Text("HALLO");
                   return Dismissible(
                     key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
@@ -255,12 +255,11 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
                             final createdTransaction = await _transactionService
                                 .createTransaction(Transaction(
-                                    Random()
-                                        .nextInt(10000000)
-                                        .toString(), // TODO: This should be handled better
+                                    "",
                                     _userInput.text,
                                     _titleInput.text,
-                                    double.parse(_amountInput.text)));
+                                    double.parse(_amountInput.text),
+                                    DateTime.now().toUtc()));
 
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
