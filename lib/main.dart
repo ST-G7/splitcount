@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_file.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +31,7 @@ final ITransactionService _transactionService = RemoteTransactionService();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   final preferences = await SharedPreferences.getInstance();
   var isDarkMode = preferences.getBool(darkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
@@ -162,14 +165,35 @@ class _TransactionListState extends State<TransactionList> {
                             )),
                         title: Text(transaction.title),
                         subtitle: Text("paid by ${transaction.user}"),
-                        trailing: Text(
-                            "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}")),
+                        trailing: Column(
+                          children: [
+                            Text(
+                                "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                            Text(
+                              _formatDate(transaction.dateTime),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        )),
                   );
                 });
           } else {
             return const Text("No data available");
           }
         });
+  }
+
+  final DateFormat dayFormatter = DateFormat('MMMEd');
+  final DateFormat todayFormatter = DateFormat.Hm();
+
+  String _formatDate(DateTime date) {
+    final DateTime now = DateTime.now();
+
+    final correctFormatter =
+        now.day == date.day && now.month == date.month && now.year == date.year
+            ? todayFormatter
+            : dayFormatter;
+    return correctFormatter.format(date);
   }
 }
 
@@ -257,7 +281,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                     _userInput.text,
                                     _titleInput.text,
                                     double.parse(_amountInput.text),
-                                    DateTime.now().toUtc()));
+                                    DateTime.now()));
 
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
