@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
               ),
               themeMode: snapshot.data,
               debugShowCheckedModeBanner: false,
-              home: const MyHomePage(title: 'Splitcount'));
+              home: const MyHomePage(title: 'GroupOverwiew'));
         });
   }
 }
@@ -64,10 +64,11 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _GroupOverviewPage();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+// ---------------
+class _GroupOverviewPage extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final isLightMode = selectedTheme.value == ThemeMode.light;
@@ -86,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
               setState(() => {});
             }),
       ),
-      body: const TransactionList(),
+      body: const GroupList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -102,14 +103,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class TransactionList extends StatefulWidget {
-  const TransactionList({super.key});
+class GroupList extends StatefulWidget {
+  const GroupList({super.key});
 
   @override
-  State<TransactionList> createState() => _TransactionListState();
+  State<GroupList> createState() => _GroupListState();
 }
 
-class _TransactionListState extends State<TransactionList> {
+class _GroupListState extends State<GroupList> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Transaction>>(
@@ -174,6 +175,116 @@ class _TransactionListState extends State<TransactionList> {
         });
   }
 }
+
+//---------------
+
+// class _MyHomePageState extends State<MyHomePage> {
+//   @override
+//   Widget build(BuildContext context) {
+//     final isLightMode = selectedTheme.value == ThemeMode.light;
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(widget.title),
+//         leading: IconButton(
+//             icon: Icon(isLightMode
+//                 ? Icons.dark_mode_rounded
+//                 : Icons.light_mode_rounded),
+//             tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
+//             onPressed: () async {
+//               await setSelectedTheme(
+//                   isLightMode ? ThemeMode.dark : ThemeMode.light);
+//               setState(() => {});
+//             }),
+//       ),
+//       body: const TransactionList(),
+//       floatingActionButton: FloatingActionButton(
+//         onPressed: () {
+//           Navigator.push(
+//             context,
+//             MaterialPageRoute(
+//                 builder: (context) => const CreateTransactionPage()),
+//           );
+//         },
+//         backgroundColor: Colors.green,
+//         child: const Icon(Icons.add),
+//       ),
+//     );
+//   }
+// }
+
+// class TransactionList extends StatefulWidget {
+//   const TransactionList({super.key});
+
+//   @override
+//   State<TransactionList> createState() => _TransactionListState();
+// }
+
+// class _TransactionListState extends State<TransactionList> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return StreamBuilder<List<Transaction>>(
+//         stream: _transactionService.getTransactions(),
+//         builder: (context, snapshot) {
+//           if (snapshot.data != null) {
+//             return ListView.separated(
+//                 separatorBuilder: (context, index) {
+//                   return const Divider(
+//                     height: 1,
+//                   );
+//                 },
+//                 itemCount: snapshot.data!.length,
+//                 shrinkWrap: true,
+//                 itemBuilder: (_, index) {
+//                   final transaction = snapshot.data![index];
+
+//                   return Dismissible(
+//                     key: Key(transaction.id.toString()),
+//                     direction: DismissDirection.endToStart,
+//                     background: Container(color: Colors.red),
+//                     onDismissed: (direction) async {
+//                       final messenger = ScaffoldMessenger.of(context);
+//                       await _transactionService.deleteTransaction(transaction);
+
+//                       messenger.showSnackBar(SnackBar(
+//                         content: Text('Entry ${transaction.title} was delete'),
+//                         action: SnackBarAction(
+//                           label: 'Undo',
+//                           onPressed: () async {
+//                             await _transactionService
+//                                 .createTransaction(transaction, index: index);
+//                           },
+//                         ),
+//                       ));
+//                     },
+//                     child: ListTile(
+//                       leading: Container(
+//                           width: 40.0,
+//                           height: 40.0,
+//                           decoration: BoxDecoration(
+//                               shape: BoxShape.circle,
+//                               color: Theme.of(context).primaryColorLight),
+//                           child: Align(
+//                             alignment: Alignment.center,
+//                             child: Text(
+//                               style: const TextStyle(fontSize: 22),
+//                               transaction.emoji ?? "💲",
+//                               textAlign: TextAlign.center,
+//                             ),
+//                           )),
+//                       title: Text(transaction.title),
+//                       subtitle: Text("paid by ${transaction.user}"),
+//                       trailing: Text(
+//                           "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+//                     ),
+//                   );
+//                 });
+//           } else {
+//             return const Text("No data available");
+//           }
+//         });
+//   }
+// }
 
 class CreateTransactionPage extends StatefulWidget {
   const CreateTransactionPage({super.key});
