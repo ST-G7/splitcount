@@ -129,43 +129,27 @@ class _GroupListState extends State<GroupList> {
                   );
                 },
                 itemCount: snapshot.data!.length,
+                padding: const EdgeInsets.only(right: 40.0),
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final group = snapshot.data![index];
 
-                  return Dismissible(
-                    key: Key(group.id.toString()),
-                    direction: DismissDirection.endToStart,
-                    background: Container(color: Colors.red),
-                    onDismissed: (direction) async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      await _groupService.deleteGroup(group);
+                  return ListTile(
+                    leading: Container(
+                        width: 40.0,
+                        height: 40.0,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Theme.of(context).primaryColorLight),
+                        child: Align(
+                          alignment: Alignment.center,
+                        )),
+                    title: Text(group.groupName),
 
-                      messenger.showSnackBar(SnackBar(
-                        content: Text('Entry ${group.groupName} was delete'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () async {
-                            await _groupService.createGroup(group);
-                          },
-                        ),
-                      ));
-                    },
-                    child: ListTile(
-                      leading: Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColorLight),
-                          child: Align(
-                            alignment: Alignment.center,
-                          )),
-                      title: Text(group.groupName),
-                      subtitle: Text("This could be the members"),
-                      //trailing: Text(
-                      //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                    ),
+                    subtitle: Text(group.members.join(", "),
+                        overflow: TextOverflow.ellipsis),
+                    //trailing: Text(
+                    //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
                   );
                 });
           } else {

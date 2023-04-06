@@ -4,6 +4,7 @@ class Group {
 
   final String groupName;
   final String owner;
+  final List<String> members;
 
-  Group(this.id, this.groupName, this.owner);
+  Group(this.id, this.groupName, this.owner, this.members);
 }

@@ -31,7 +31,7 @@ class RemoteGroupService implements IGroupService {
         data: {
           "groupName": group.groupName,
           "owner": group.owner,
-          // "members": group.members,
+          "members": group.members,
         });
 
     return _createGroupFromDocument(document);
@@ -68,7 +68,15 @@ class RemoteGroupService implements IGroupService {
   }
 
   Group _createGroupFromDocument(Document document) {
-    return Group(
-        document.$id, document.data["groupName"], document.data["owner"]);
+    var dynamicList = document.data["members"];
+    List<String> members = <String>[];
+
+    // Need to do it this way because document.data["members"] is of type List<dynamic>
+    for (var strEl in dynamicList) {
+      members.add(strEl.toString());
+    }
+
+    return Group(document.$id, document.data["groupName"],
+        document.data["owner"], members);
   }
 }
