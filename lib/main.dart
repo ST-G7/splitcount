@@ -5,9 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
+import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/core/services/remote_transaction_service.dart';
+import 'package:splitcount/core/services/remote_group_service.dart';
 
 import 'core/models/transaction.dart';
+import 'core/models/group.dart';
 
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
@@ -27,6 +30,8 @@ setSelectedTheme(ThemeMode mode) async {
 }
 
 final ITransactionService _transactionService = RemoteTransactionService();
+final IGroupService _groupService = RemoteGroupService();
+
 //final ITransactionService _transactionService = InMemoryTransactionService();
 
 void main() async {
@@ -113,6 +118,110 @@ class GroupList extends StatefulWidget {
 class _GroupListState extends State<GroupList> {
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<List<Group>>(
+        stream: _groupService.getGroups(),
+        builder: (context, snapshot) {
+          if (snapshot.data != null) {
+            return ListView.separated(
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    height: 1,
+                  );
+                },
+                itemCount: snapshot.data!.length,
+                shrinkWrap: true,
+                itemBuilder: (_, index) {
+                  final group = snapshot.data![index];
+
+                  return Dismissible(
+                    key: Key(group.id.toString()),
+                    direction: DismissDirection.endToStart,
+                    background: Container(color: Colors.red),
+                    onDismissed: (direction) async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      await _groupService.deleteGroup(group);
+
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Entry ${group.groupName} was delete'),
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () async {
+                            await _groupService.createGroup(group);
+                          },
+                        ),
+                      ));
+                    },
+                    child: ListTile(
+                      leading: Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).primaryColorLight),
+                          child: Align(
+                            alignment: Alignment.center,
+                          )),
+                      title: Text(group.groupName),
+                      subtitle: Text("This could be the members"),
+                      //trailing: Text(
+                      //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                    ),
+                  );
+                });
+          } else {
+            return const Text("No data available");
+          }
+        });
+  }
+}
+
+//---------------
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    final isLightMode = selectedTheme.value == ThemeMode.light;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        leading: IconButton(
+            icon: Icon(isLightMode
+                ? Icons.dark_mode_rounded
+                : Icons.light_mode_rounded),
+            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
+            onPressed: () async {
+              await setSelectedTheme(
+                  isLightMode ? ThemeMode.dark : ThemeMode.light);
+              setState(() => {});
+            }),
+      ),
+      body: const TransactionList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const CreateTransactionPage()),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class TransactionList extends StatefulWidget {
+  const TransactionList({super.key});
+
+  @override
+  State<TransactionList> createState() => _TransactionListState();
+}
+
+class _TransactionListState extends State<TransactionList> {
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<List<Transaction>>(
         stream: _transactionService.getTransactions(),
         builder: (context, snapshot) {
@@ -175,116 +284,6 @@ class _GroupListState extends State<GroupList> {
         });
   }
 }
-
-//---------------
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final isLightMode = selectedTheme.value == ThemeMode.light;
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(widget.title),
-//         leading: IconButton(
-//             icon: Icon(isLightMode
-//                 ? Icons.dark_mode_rounded
-//                 : Icons.light_mode_rounded),
-//             tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-//             onPressed: () async {
-//               await setSelectedTheme(
-//                   isLightMode ? ThemeMode.dark : ThemeMode.light);
-//               setState(() => {});
-//             }),
-//       ),
-//       body: const TransactionList(),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: () {
-//           Navigator.push(
-//             context,
-//             MaterialPageRoute(
-//                 builder: (context) => const CreateTransactionPage()),
-//           );
-//         },
-//         backgroundColor: Colors.green,
-//         child: const Icon(Icons.add),
-//       ),
-//     );
-//   }
-// }
-
-// class TransactionList extends StatefulWidget {
-//   const TransactionList({super.key});
-
-//   @override
-//   State<TransactionList> createState() => _TransactionListState();
-// }
-
-// class _TransactionListState extends State<TransactionList> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return StreamBuilder<List<Transaction>>(
-//         stream: _transactionService.getTransactions(),
-//         builder: (context, snapshot) {
-//           if (snapshot.data != null) {
-//             return ListView.separated(
-//                 separatorBuilder: (context, index) {
-//                   return const Divider(
-//                     height: 1,
-//                   );
-//                 },
-//                 itemCount: snapshot.data!.length,
-//                 shrinkWrap: true,
-//                 itemBuilder: (_, index) {
-//                   final transaction = snapshot.data![index];
-
-//                   return Dismissible(
-//                     key: Key(transaction.id.toString()),
-//                     direction: DismissDirection.endToStart,
-//                     background: Container(color: Colors.red),
-//                     onDismissed: (direction) async {
-//                       final messenger = ScaffoldMessenger.of(context);
-//                       await _transactionService.deleteTransaction(transaction);
-
-//                       messenger.showSnackBar(SnackBar(
-//                         content: Text('Entry ${transaction.title} was delete'),
-//                         action: SnackBarAction(
-//                           label: 'Undo',
-//                           onPressed: () async {
-//                             await _transactionService
-//                                 .createTransaction(transaction, index: index);
-//                           },
-//                         ),
-//                       ));
-//                     },
-//                     child: ListTile(
-//                       leading: Container(
-//                           width: 40.0,
-//                           height: 40.0,
-//                           decoration: BoxDecoration(
-//                               shape: BoxShape.circle,
-//                               color: Theme.of(context).primaryColorLight),
-//                           child: Align(
-//                             alignment: Alignment.center,
-//                             child: Text(
-//                               style: const TextStyle(fontSize: 22),
-//                               transaction.emoji ?? "💲",
-//                               textAlign: TextAlign.center,
-//                             ),
-//                           )),
-//                       title: Text(transaction.title),
-//                       subtitle: Text("paid by ${transaction.user}"),
-//                       trailing: Text(
-//                           "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-//                     ),
-//                   );
-//                 });
-//           } else {
-//             return const Text("No data available");
-//           }
-//         });
-//   }
-// }
 
 class CreateTransactionPage extends StatefulWidget {
   const CreateTransactionPage({super.key});

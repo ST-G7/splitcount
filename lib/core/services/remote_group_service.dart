@@ -13,7 +13,7 @@ class RemoteGroupService implements IGroupService {
   static const String databaseId = "642e85442ecb0146d94f";
   static const String collectionId = "642e86754648f1898e7b";
 
-  RemoteTransactionService() {
+  RemoteGroupService() {
     client
         .setEndpoint('https://appwrite.perz.cloud/v1')
         .setProject('642c3fa6c1557c18bdbf');
@@ -46,7 +46,7 @@ class RemoteGroupService implements IGroupService {
   }
 
   @override
-  Stream<List<Group>> getGroup() async* {
+  Stream<List<Group>> getGroups() async* {
     final subscription = realtime.subscribe(
         ['databases.$databaseId.collections.$collectionId.documents']);
 

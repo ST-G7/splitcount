@@ -4,7 +4,6 @@ class Group {
 
   final String groupName;
   final String owner;
-  final double expenses;
 
-  Group(this.groupName, this.owner, this.expenses);
+  Group(this.id, this.groupName, this.owner);
 }
