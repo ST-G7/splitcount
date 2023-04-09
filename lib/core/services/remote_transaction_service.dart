@@ -1,4 +1,3 @@
-import 'package:appwrite/models.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
@@ -8,24 +7,21 @@ import 'package:appwrite/appwrite.dart';
 import '../../constants.dart';
 
 class RemoteTransactionService implements ITransactionService {
-  static const String transactionCollectionId = "642c40fb9cb6828f0ba2";
-
-  final Client client =
-      Client().setEndpoint(appwriteEndpoint).setProject(appwriteProjectId);
+  static const String transactionCollectionId = "64327dbba600a97fc0fa";
 
   late Realtime realtime;
   late Databases databases;
 
   RemoteTransactionService() {
-    databases = Databases(client);
-    realtime = Realtime(client);
+    databases = Databases(appwriteClient);
+    realtime = Realtime(appwriteClient);
   }
 
   @override
   Future<Transaction> createTransaction(Transaction transaction,
       {int? index}) async {
     var document = await databases.createDocument(
-        databaseId: appwriteMainDatabaseId,
+        databaseId: appwriteDatabaseId,
         collectionId: transactionCollectionId,
         documentId: ID.unique(),
         data: {
@@ -41,7 +37,7 @@ class RemoteTransactionService implements ITransactionService {
   @override
   Future<void> deleteTransaction(Transaction transaction) async {
     await databases.deleteDocument(
-        databaseId: appwriteMainDatabaseId,
+        databaseId: appwriteDatabaseId,
         collectionId: transactionCollectionId,
         documentId: transaction.id);
   }
@@ -49,7 +45,7 @@ class RemoteTransactionService implements ITransactionService {
   @override
   Stream<List<Transaction>> getTransactions() async* {
     final subscription = realtime.subscribe([
-      'databases.$appwriteMainDatabaseId.collections.$transactionCollectionId.documents'
+      'databases.$appwriteDatabaseId.collections.$transactionCollectionId.documents'
     ]);
 
     yield* subscription.stream
@@ -59,7 +55,7 @@ class RemoteTransactionService implements ITransactionService {
 
   Future<List<Transaction>> _getTransactionList() async {
     final transactionDocuments = await databases.listDocuments(
-        databaseId: appwriteMainDatabaseId,
+        databaseId: appwriteDatabaseId,
         collectionId: transactionCollectionId,
         queries: [Query.orderDesc("date")]);
 

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/services/transaction_service.dart';
 import 'core/services/remote_transaction_service.dart';
 import 'core/models/transaction.dart';
+import 'core/ui/user_avatar.dart';
 
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
@@ -164,8 +165,18 @@ class _TransactionListState extends State<TransactionList> {
                               ),
                             )),
                         title: Text(transaction.title),
-                        subtitle: Text("paid by ${transaction.user}"),
+                        subtitle: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text("paid by"),
+                              const SizedBox(width: 4),
+                              UserAvatar(transaction.user, 18),
+                              const SizedBox(width: 2),
+                              Text(transaction.user)
+                            ]),
                         trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                                 "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
@@ -238,7 +249,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                   ),
                   TextFormField(
                     controller: _amountInput,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        signed: false, decimal: true),
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(
                           RegExp('[0-9]+(,[0-9][0-9])?'))
