@@ -1,26 +1,27 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_file.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:splitcount/core/services/transaction_service.dart';
-import 'package:splitcount/core/services/remote_transaction_service.dart';
 
+import 'core/services/transaction_service.dart';
+import 'core/services/remote_transaction_service.dart';
 import 'core/models/transaction.dart';
+import 'core/ui/user_avatar.dart';
 
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
 
-const kDarkModePreferencesKey = 'dark-mode';
+const darkModePreferencesKey = 'dark-mode';
 
 setSelectedTheme(ThemeMode mode) async {
   final preferences = await SharedPreferences.getInstance();
 
   if (mode == ThemeMode.dark) {
-    await preferences.setBool(kDarkModePreferencesKey, true);
+    await preferences.setBool(darkModePreferencesKey, true);
   } else {
-    await preferences.remove(kDarkModePreferencesKey);
+    await preferences.remove(darkModePreferencesKey);
   }
 
   selectedTheme.add(mode);
@@ -30,9 +31,12 @@ final ITransactionService _transactionService = RemoteTransactionService();
 //final ITransactionService _transactionService = InMemoryTransactionService();
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final preferences = await SharedPreferences.getInstance();
-  var isDarkMode = preferences.getBool(kDarkModePreferencesKey) ?? false;
+  var isDarkMode = preferences.getBool(darkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
+
   runApp(const MyApp());
 }
 
@@ -126,7 +130,6 @@ class _TransactionListState extends State<TransactionList> {
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final transaction = snapshot.data![index];
-
                   return Dismissible(
                     key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
@@ -147,31 +150,61 @@ class _TransactionListState extends State<TransactionList> {
                       ));
                     },
                     child: ListTile(
-                      leading: Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColorLight),
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              style: const TextStyle(fontSize: 22),
-                              transaction.emoji ?? "💲",
-                              textAlign: TextAlign.center,
+                        leading: Container(
+                            width: 40.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).primaryColorLight),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                style: const TextStyle(fontSize: 22),
+                                transaction.emoji ?? "💲",
+                                textAlign: TextAlign.center,
+                              ),
+                            )),
+                        title: Text(transaction.title),
+                        subtitle: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text("paid by"),
+                              const SizedBox(width: 4),
+                              UserAvatar(transaction.user, 18),
+                              const SizedBox(width: 2),
+                              Text(transaction.user)
+                            ]),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                                "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                            Text(
+                              _formatDate(transaction.dateTime),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                          )),
-                      title: Text(transaction.title),
-                      subtitle: Text("paid by ${transaction.user}"),
-                      trailing: Text(
-                          "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                    ),
+                          ],
+                        )),
                   );
                 });
           } else {
             return const Text("No data available");
           }
         });
+  }
+
+  final DateFormat dayFormatter = DateFormat('MMMEd');
+  final DateFormat todayFormatter = DateFormat.Hm();
+
+  String _formatDate(DateTime date) {
+    final DateTime now = DateTime.now();
+
+    final correctFormatter =
+        now.day == date.day && now.month == date.month && now.year == date.year
+            ? todayFormatter
+            : dayFormatter;
+    return correctFormatter.format(date);
   }
 }
 
@@ -216,7 +249,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                   ),
                   TextFormField(
                     controller: _amountInput,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        signed: false, decimal: true),
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(
                           RegExp('[0-9]+(,[0-9][0-9])?'))
@@ -255,12 +289,11 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
                             final createdTransaction = await _transactionService
                                 .createTransaction(Transaction(
-                                    Random()
-                                        .nextInt(10000000)
-                                        .toString(), // TODO: This should be handled better
+                                    "",
                                     _userInput.text,
                                     _titleInput.text,
-                                    double.parse(_amountInput.text)));
+                                    double.parse(_amountInput.text),
+                                    DateTime.now()));
 
                             scaffoldMessenger.showSnackBar(
                               SnackBar(

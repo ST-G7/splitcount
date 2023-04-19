@@ -6,11 +6,11 @@ import '../models/transaction.dart';
 import 'transaction_service.dart';
 
 final demoTransactionList = [
-  Transaction("0", "Max", "Flight (Rio)", 2.000),
-  Transaction("1", "Lisa", "Car", 12.000, emoji: "🏎️"),
-  Transaction("2", "John", "Kebab", 4.50, emoji: "🥙"),
-  Transaction("3", "Anna", "Cafe & Biscuits", 7.80),
-  Transaction("4", "Ludwig", "Restaurant", 76.99)
+  Transaction("0", "Max", "Flight (Rio)", 2.000, DateTime(2023, 4, 4)),
+  Transaction("1", "Lisa", "Car", 12.000, emoji: "🏎️", DateTime(2023, 4, 5)),
+  Transaction("2", "John", "Kebab", 4.50, emoji: "🥙", DateTime(2023, 4, 6)),
+  Transaction("3", "Anna", "Cafe & Biscuits", 7.80, DateTime(2023, 4, 7)),
+  Transaction("4", "Ludwig", "Restaurant", 76.99, DateTime(2023, 4, 8))
 ];
 
 class InMemoryTransactionService implements ITransactionService {
