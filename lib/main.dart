@@ -141,9 +141,7 @@ class _GroupListState extends State<GroupList> {
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Theme.of(context).primaryColorLight),
-                        child: Align(
-                          alignment: Alignment.center,
-                        )),
+                        child: const Align(alignment: Alignment.center)),
                     title: Text(group.groupName),
 
                     subtitle: Text(group.members.join(", "),
