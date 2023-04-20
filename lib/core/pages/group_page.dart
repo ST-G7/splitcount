@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
@@ -75,30 +77,51 @@ class _GroupListState extends State<GroupList> {
                 itemBuilder: (_, index) {
                   final group = snapshot.data![index];
 
-                  return ListTile(
-                    leading: Container(
-                        width: 40.0,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Theme.of(context).primaryColorLight),
-                        child: const Align(alignment: Alignment.center)),
-                    title: Text(group.groupName),
+                  return Dismissible(
+                    key: Key(group.id.toString()),
+                    direction: DismissDirection.endToStart,
+                    background: Container(color: Colors.red),
+                    onDismissed: (direction) async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      await context.read<IGroupService>().deleteGroup(group);
 
-                    subtitle: Text(group.members.join(", "),
-                        overflow: TextOverflow.ellipsis),
-
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              TransactionPage(title: group.groupName),
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Group ${group.groupName} was deleted'),
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () async {
+                            await context
+                                .read<IGroupService>()
+                                .createGroup(group, index: index);
+                          },
                         ),
-                      );
+                      ));
                     },
-                    //trailing: Text(
-                    //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                    child: ListTile(
+                      leading: Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).primaryColorLight),
+                          child: const Align(alignment: Alignment.center)),
+                      title: Text(group.groupName),
+
+                      subtitle: Text(group.members.join(", "),
+                          overflow: TextOverflow.ellipsis),
+
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TransactionPage(title: group.groupName),
+                          ),
+                        );
+                      },
+                      //trailing: Text(
+                      //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                    ),
                   );
                 });
           } else {
@@ -116,8 +139,101 @@ class CreateGroupPage extends StatefulWidget {
 }
 
 class _CreateGroupPageState extends State<CreateGroupPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _groupName = TextEditingController();
+  final TextEditingController _groupOwner = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Material(
+      child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Create Group'),
+          ),
+          body: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    autofocus: true,
+                    controller: _groupName,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please provide a valid group name';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(labelText: 'Group Name'),
+                  ),
+                  TextFormField(
+                    controller: _groupOwner,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Enter your name';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                        labelText: 'this will be omitted in the future'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            final scaffoldMessenger =
+                                ScaffoldMessenger.of(context);
+                            final navigator = Navigator.of(context);
+
+                            final createdGroup = await context
+                                .read<IGroupService>()
+                                .createGroup(Group(
+                                    Random()
+                                        .nextInt(10000000)
+                                        .toString(), // TODO: This should be handled better
+                                    _groupName.text,
+                                    _groupOwner.text,
+                                    <String>[]));
+
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Created ${createdGroup.groupName}'),
+                                action: SnackBarAction(
+                                    label: 'Undo',
+                                    onPressed: () async => {
+                                          //TODO: lt. stackoverflow: "First of all, never call async methods inside of build as mentioned."
+                                          await context // TODO: this breaks when "undoing" the current transaction
+                                              .read<IGroupService>()
+                                              .deleteGroup(createdGroup)
+                                        }),
+                              ),
+                            );
+
+                            navigator.pop();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor:
+                              Theme.of(context).primaryIconTheme.color,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          elevation: 1.0,
+                        ),
+                        child: const Text('Create Entry'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
+    );
   }
 }

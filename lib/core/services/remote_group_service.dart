@@ -64,14 +64,15 @@ class RemoteGroupService implements IGroupService {
         queries: [Query.orderDesc("\$createdAt")]);
     // queries: [Query.equal("owner", [currentUser])]);
 
-    List<Group> groups = <Group>[];
-    for (var group
-        in groupDocuments.documents.map(_createGroupFromDocument).toList()) {
-      if (group.members.contains(currentUser)) {
-        groups.add(group);
-      }
-    }
-    return groups;
+    // List<Group> groups = <Group>[];
+    // for (var group
+    //     in groupDocuments.documents.map(_createGroupFromDocument).toList()) {
+    //   if (group.members.contains(currentUser)) {
+    //     groups.add(group);
+    //   }
+    // }
+    // return groups;
+    return groupDocuments.documents.map(_createGroupFromDocument).toList();
   }
 
   Group _createGroupFromDocument(Document document) {
