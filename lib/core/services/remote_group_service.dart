@@ -61,10 +61,10 @@ class RemoteGroupService implements IGroupService {
         collectionId: collectionId,
         queries: [Query.orderDesc("\$createdAt")]);
 
-    final expenses =
+    final groups =
         groupDocuments.documents.map(_createGroupFromDocument).toList();
 
-    return expenses;
+    return groups;
   }
 
   Group _createGroupFromDocument(Document document) {
