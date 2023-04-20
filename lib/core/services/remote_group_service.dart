@@ -5,6 +5,8 @@ import 'package:splitcount/core/services/group_service.dart';
 
 import 'package:appwrite/appwrite.dart';
 
+const String currentUser = "David"; // hardcoded for now
+
 class RemoteGroupService implements IGroupService {
   final Client client = Client();
   late Realtime realtime;
@@ -60,10 +62,15 @@ class RemoteGroupService implements IGroupService {
         databaseId: databaseId,
         collectionId: collectionId,
         queries: [Query.orderDesc("\$createdAt")]);
+    // queries: [Query.equal("owner", [currentUser])]);
 
-    final groups =
-        groupDocuments.documents.map(_createGroupFromDocument).toList();
-
+    List<Group> groups = <Group>[];
+    for (var group
+        in groupDocuments.documents.map(_createGroupFromDocument).toList()) {
+      if (group.members.contains(currentUser)) {
+        groups.add(group);
+      }
+    }
     return groups;
   }
 
