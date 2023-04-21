@@ -143,6 +143,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    var transactionService = context.read<ITransactionService>();
     return Material(
       child: Scaffold(
           appBar: AppBar(
@@ -205,8 +207,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                 ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
 
-                            final createdTransaction = await context
-                                .read<ITransactionService>()
+                            final createdTransaction = await transactionService
                                 .createTransaction(Transaction(
                                     Random()
                                         .nextInt(10000000)
@@ -222,9 +223,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                 action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async => {
-                                          //TODO: lt. stackoverflow: "First of all, never call async methods inside of build as mentioned."
-                                          await context // TODO: this breaks when "undoing" the current transaction
-                                              .read<ITransactionService>()
+                                          await transactionService
                                               .deleteTransaction(
                                                   createdTransaction)
                                         }),

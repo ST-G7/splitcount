@@ -146,6 +146,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    var groupService = context.read<IGroupService>();
+
     return Material(
       child: Scaffold(
           appBar: AppBar(
@@ -192,8 +195,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                 ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
 
-                            final createdGroup = await context
-                                .read<IGroupService>()
+                            final createdGroup = await groupService
                                 .createGroup(Group(
                                     Random()
                                         .nextInt(10000000)
@@ -209,9 +211,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                 action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async => {
-                                          //TODO: lt. stackoverflow: "First of all, never call async methods inside of build as mentioned."
-                                          await context // TODO: this breaks when "undoing" the current transaction
-                                              .read<IGroupService>()
+                                          await groupService
                                               .deleteGroup(createdGroup)
                                         }),
                               ),

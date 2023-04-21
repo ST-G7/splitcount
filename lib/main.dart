@@ -22,7 +22,7 @@ setSelectedTheme(ThemeMode mode) async {
     await preferences.setBool(kDarkModePreferencesKey, true);
   } else {
     await preferences.remove(kDarkModePreferencesKey);
-  }
+  } 
 
   selectedTheme.add(mode);
 }
