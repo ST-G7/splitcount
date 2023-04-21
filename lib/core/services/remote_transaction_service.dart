@@ -1,76 +1,74 @@
-import 'package:appwrite/models.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 
 import 'package:appwrite/appwrite.dart';
 
+import '../../constants.dart';
+
 class RemoteTransactionService implements ITransactionService {
-  final Client client = Client();
+  static const String transactionCollectionId = "64327dbba600a97fc0fa";
+
   late Realtime realtime;
   late Databases databases;
 
-  static const String databaseId = "642751b87c6dbc13f97e";
-  static const String collectionId = "642751e73ea8bf7bcb3a";
-
   RemoteTransactionService() {
-    client
-        .setEndpoint('https://appwrite.perz.cloud/v1')
-        .setProject('6427515d8090de3f3f0f');
-
-    databases = Databases(client);
-    realtime = Realtime(client);
+    databases = Databases(appwriteClient);
+    realtime = Realtime(appwriteClient);
   }
 
   @override
   Future<Transaction> createTransaction(Transaction transaction,
       {int? index}) async {
     var document = await databases.createDocument(
-        databaseId: databaseId,
-        collectionId: collectionId,
+        databaseId: appwriteDatabaseId,
+        collectionId: transactionCollectionId,
         documentId: ID.unique(),
         data: {
           "user": transaction.user,
           "amount": transaction.amount,
           "title": transaction.title,
+          "date": transaction.dateTime.toIso8601String()
         });
 
-    return _createTransactionFromDocument(document);
+    return Transaction.fromAppwriteDocument(document);
   }
 
   @override
   Future<void> deleteTransaction(Transaction transaction) async {
     await databases.deleteDocument(
-        databaseId: databaseId,
-        collectionId: collectionId,
+        databaseId: appwriteDatabaseId,
+        collectionId: transactionCollectionId,
         documentId: transaction.id);
   }
 
   @override
   Stream<List<Transaction>> getTransactions() async* {
-    final subscription = realtime.subscribe(
-        ['databases.$databaseId.collections.$collectionId.documents']);
+    final subscription = realtime.subscribe([
+      'databases.$appwriteDatabaseId.collections.$transactionCollectionId.documents'
+    ]);
 
     yield* subscription.stream
-        .asyncMap((event) => _getTransactionList())
+        .asyncMap(_onHandleTransactionListChanged)
         .startWith(await _getTransactionList());
   }
 
   Future<List<Transaction>> _getTransactionList() async {
     final transactionDocuments = await databases.listDocuments(
-        databaseId: databaseId,
-        collectionId: collectionId,
-        queries: [Query.orderDesc("\$createdAt")]);
+        databaseId: appwriteDatabaseId,
+        collectionId: transactionCollectionId,
+        queries: [Query.orderDesc("date")]);
 
     final expenses = transactionDocuments.documents
-        .map(_createTransactionFromDocument)
+        .map(Transaction.fromAppwriteDocument)
         .toList();
 
     return expenses;
   }
 
-  Transaction _createTransactionFromDocument(Document document) {
-    return Transaction(document.$id, document.data["user"],
-        document.data["title"], (document.data["amount"] as num).toDouble());
+  Future<List<Transaction>> _onHandleTransactionListChanged(
+      RealtimeMessage event) {
+    // TODO: We don't need to query the entire list again here
+    return _getTransactionList();
   }
 }

@@ -2,10 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:splitcount/main.dart';
+
+import '../ui/user_avatar.dart';
 
 class TransactionPage extends StatefulWidget {
   const TransactionPage({super.key, required this.title});
@@ -61,8 +64,9 @@ class TransactionList extends StatefulWidget {
 class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
+    var transactionService = context.read<ITransactionService>();
     return StreamBuilder<List<Transaction>>(
-        stream: context.read<ITransactionService>().getTransactions(),
+        stream: transactionService.getTransactions(),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
             return ListView.separated(
@@ -75,55 +79,81 @@ class _TransactionListState extends State<TransactionList> {
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final transaction = snapshot.data![index];
-
                   return Dismissible(
                     key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) async {
                       final messenger = ScaffoldMessenger.of(context);
-                      await context
-                          .read<ITransactionService>()
-                          .deleteTransaction(transaction);
+                      await transactionService.deleteTransaction(transaction);
 
                       messenger.showSnackBar(SnackBar(
-                        content: Text('Entry ${transaction.title} was deleted'),
+                        content: Text('Entry ${transaction.title} was delete'),
                         action: SnackBarAction(
                           label: 'Undo',
                           onPressed: () async {
-                            await context
-                                .read<ITransactionService>()
+                            await transactionService
                                 .createTransaction(transaction, index: index);
                           },
                         ),
                       ));
                     },
                     child: ListTile(
-                      leading: Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).primaryColorLight),
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              style: const TextStyle(fontSize: 22),
-                              transaction.emoji ?? "💲",
-                              textAlign: TextAlign.center,
+                        leading: Container(
+                            width: 40.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).primaryColorLight),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                style: const TextStyle(fontSize: 22),
+                                transaction.emoji ?? "💲",
+                                textAlign: TextAlign.center,
+                              ),
+                            )),
+                        title: Text(transaction.title),
+                        subtitle: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text("paid by"),
+                              const SizedBox(width: 4),
+                              UserAvatar(transaction.user, 18),
+                              const SizedBox(width: 2),
+                              Text(transaction.user)
+                            ]),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                                "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+                            Text(
+                              _formatDate(transaction.dateTime),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                          )),
-                      title: Text(transaction.title),
-                      subtitle: Text("paid by ${transaction.user}"),
-                      trailing: Text(
-                          "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                    ),
+                          ],
+                        )),
                   );
                 });
           } else {
             return const Text("No data available");
           }
         });
+  }
+
+  final DateFormat dayFormatter = DateFormat('MMMEd');
+  final DateFormat todayFormatter = DateFormat.Hm();
+
+  String _formatDate(DateTime date) {
+    final DateTime now = DateTime.now();
+
+    final correctFormatter =
+        now.day == date.day && now.month == date.month && now.year == date.year
+            ? todayFormatter
+            : dayFormatter;
+    return correctFormatter.format(date);
   }
 }
 
@@ -143,7 +173,6 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-
     var transactionService = context.read<ITransactionService>();
     return Material(
       child: Scaffold(
@@ -170,7 +199,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                   ),
                   TextFormField(
                     controller: _amountInput,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        signed: false, decimal: true),
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(
                           RegExp('[0-9]+(,[0-9][0-9])?'))
@@ -209,12 +239,11 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
                             final createdTransaction = await transactionService
                                 .createTransaction(Transaction(
-                                    Random()
-                                        .nextInt(10000000)
-                                        .toString(), // TODO: This should be handled better
+                                    "",
                                     _userInput.text,
                                     _titleInput.text,
-                                    double.parse(_amountInput.text)));
+                                    double.parse(_amountInput.text),
+                                    DateTime.now()));
 
                             scaffoldMessenger.showSnackBar(
                               SnackBar(

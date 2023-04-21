@@ -13,23 +13,25 @@ import 'package:provider/provider.dart';
 BehaviorSubject<ThemeMode> selectedTheme =
     BehaviorSubject.seeded(ThemeMode.light);
 
-const kDarkModePreferencesKey = 'dark-mode';
+const darkModePreferencesKey = 'dark-mode';
 
 setSelectedTheme(ThemeMode mode) async {
   final preferences = await SharedPreferences.getInstance();
 
   if (mode == ThemeMode.dark) {
-    await preferences.setBool(kDarkModePreferencesKey, true);
+    await preferences.setBool(darkModePreferencesKey, true);
   } else {
-    await preferences.remove(kDarkModePreferencesKey);
-  } 
+    await preferences.remove(darkModePreferencesKey);
+  }
 
   selectedTheme.add(mode);
 }
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final preferences = await SharedPreferences.getInstance();
-  var isDarkMode = preferences.getBool(kDarkModePreferencesKey) ?? false;
+  var isDarkMode = preferences.getBool(darkModePreferencesKey) ?? false;
   selectedTheme.add(isDarkMode ? ThemeMode.dark : ThemeMode.light);
 
   runApp(
