@@ -21,7 +21,21 @@ class TransactionPage extends StatefulWidget {
   State<TransactionPage> createState() => _TransactionPageState();
 }
 
-class _TransactionPageState extends State<TransactionPage> {
+class _TransactionPageState extends State<TransactionPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _controller;
+  var _selectedTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        TabController(length: 2, vsync: this, initialIndex: _selectedTabIndex);
+    _controller.addListener(() => setState(() {
+          _selectedTabIndex = _controller.index;
+        }));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Provider<ITransactionService>(
@@ -29,19 +43,35 @@ class _TransactionPageState extends State<TransactionPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.group.name),
+          bottom: TabBar(
+            controller: _controller,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: const <Tab>[
+              Tab(text: 'Transactions'),
+              Tab(text: 'Overview'),
+            ],
+          ),
         ),
-        body: const TransactionList(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      CreateTransactionPage(widget.transactionService)),
-            );
-          },
-          child: const Icon(Icons.add),
-        ),
+        body: TabBarView(controller: _controller, children: const [
+          TransactionList(),
+          Center(
+            child: Text("Not yet implemented"),
+          )
+        ]),
+        floatingActionButton: _selectedTabIndex == 0
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            CreateTransactionPage(widget.transactionService)),
+                  );
+                },
+                child: const Icon(Icons.add),
+              )
+            : null,
+        /*floatingActionButton: */
       ),
     );
   }
