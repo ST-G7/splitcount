@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
@@ -8,9 +6,9 @@ import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/main.dart';
 
 class GroupOverviewPage extends StatefulWidget {
-  const GroupOverviewPage({super.key, required this.title});
-
-  final String title;
+  const GroupOverviewPage({
+    super.key,
+  });
 
   @override
   State<GroupOverviewPage> createState() => _GroupOverviewPageState();
@@ -23,7 +21,7 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text("Groups"),
         leading: IconButton(
             icon: Icon(isLightMode
                 ? Icons.dark_mode_rounded
@@ -72,7 +70,6 @@ class _GroupListState extends State<GroupList> {
                   );
                 },
                 itemCount: snapshot.data!.length,
-                padding: const EdgeInsets.only(right: 40.0),
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final group = snapshot.data![index];
@@ -86,7 +83,7 @@ class _GroupListState extends State<GroupList> {
                       await context.read<IGroupService>().deleteGroup(group);
 
                       messenger.showSnackBar(SnackBar(
-                        content: Text('Group ${group.groupName} was deleted'),
+                        content: Text('Group ${group.name} was deleted'),
                         action: SnackBarAction(
                           label: 'Undo',
                           onPressed: () async {
@@ -105,7 +102,7 @@ class _GroupListState extends State<GroupList> {
                               shape: BoxShape.circle,
                               color: Theme.of(context).primaryColorLight),
                           child: const Align(alignment: Alignment.center)),
-                      title: Text(group.groupName),
+                      title: Text(group.name),
 
                       subtitle: Text(group.members.join(", "),
                           overflow: TextOverflow.ellipsis),
@@ -114,8 +111,7 @@ class _GroupListState extends State<GroupList> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                TransactionPage(title: group.groupName),
+                            builder: (context) => TransactionPage(group),
                           ),
                         );
                       },
@@ -146,7 +142,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
-
     var groupService = context.read<IGroupService>();
 
     return Material(
@@ -195,19 +190,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                 ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
 
-                            final createdGroup = await groupService
-                                .createGroup(Group(
-                                    Random()
-                                        .nextInt(10000000)
-                                        .toString(), // TODO: This should be handled better
-                                    _groupName.text,
-                                    _groupOwner.text,
+                            final createdGroup = await groupService.createGroup(
+                                Group("", _groupName.text, _groupOwner.text,
                                     <String>[]));
 
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
-                                content:
-                                    Text('Created ${createdGroup.groupName}'),
+                                content: Text('Created ${createdGroup.name}'),
                                 action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async => {

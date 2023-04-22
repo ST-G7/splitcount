@@ -1,19 +1,21 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:splitcount/core/models/transaction.dart';
-import 'package:splitcount/core/services/transaction_service.dart';
-import 'package:splitcount/main.dart';
+import 'package:splitcount/core/models/group.dart';
 
-import '../ui/user_avatar.dart';
+import 'package:splitcount/core/models/transaction.dart';
+import 'package:splitcount/core/pages/create_transaction_page.dart';
+import 'package:splitcount/core/services/transaction_service.dart';
+import 'package:splitcount/core/services/remote_transaction_service.dart';
+import 'package:splitcount/core/ui/user_avatar.dart';
 
 class TransactionPage extends StatefulWidget {
-  const TransactionPage({super.key, required this.title});
+  TransactionPage(this.group, {super.key}) {
+    transactionService = RemoteTransactionService(group);
+  }
 
-  final String title;
+  final Group group;
+  late final ITransactionService transactionService;
 
   @override
   State<TransactionPage> createState() => _TransactionPageState();
@@ -22,33 +24,25 @@ class TransactionPage extends StatefulWidget {
 class _TransactionPageState extends State<TransactionPage> {
   @override
   Widget build(BuildContext context) {
-    final isLightMode = selectedTheme.value == ThemeMode.light;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        leading: IconButton(
-            icon: Icon(isLightMode
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded),
-            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-            onPressed: () async {
-              await setSelectedTheme(
-                  isLightMode ? ThemeMode.dark : ThemeMode.light);
-              setState(() => {});
-            }),
-      ),
-      body: const TransactionList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const CreateTransactionPage()),
-          );
-        },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
+    return Provider<ITransactionService>(
+      create: (_) => widget.transactionService,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.group.name),
+        ),
+        body: const TransactionList(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      CreateTransactionPage(widget.transactionService)),
+            );
+          },
+          backgroundColor: Colors.green,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -66,7 +60,7 @@ class _TransactionListState extends State<TransactionList> {
   Widget build(BuildContext context) {
     var transactionService = context.read<ITransactionService>();
     return StreamBuilder<List<Transaction>>(
-        stream: transactionService.getTransactions(),
+        stream: transactionService.getLiveTransactions(),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
             return ListView.separated(
@@ -154,128 +148,5 @@ class _TransactionListState extends State<TransactionList> {
             ? todayFormatter
             : dayFormatter;
     return correctFormatter.format(date);
-  }
-}
-
-class CreateTransactionPage extends StatefulWidget {
-  const CreateTransactionPage({super.key});
-
-  @override
-  State<CreateTransactionPage> createState() => _CreateTransactionPageState();
-}
-
-class _CreateTransactionPageState extends State<CreateTransactionPage> {
-  final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _userInput = TextEditingController();
-  final TextEditingController _titleInput = TextEditingController();
-  final TextEditingController _amountInput = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    var transactionService = context.read<ITransactionService>();
-    return Material(
-      child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Create Transaction'),
-          ),
-          body: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    autofocus: true,
-                    controller: _titleInput,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please provide a valid title';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Title'),
-                  ),
-                  TextFormField(
-                    controller: _amountInput,
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: true),
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(
-                          RegExp('[0-9]+(,[0-9][0-9])?'))
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid value';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Amount',
-                    ),
-                  ),
-                  TextFormField(
-                    controller: _userInput,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Enter a user';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Person'),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            final scaffoldMessenger =
-                                ScaffoldMessenger.of(context);
-                            final navigator = Navigator.of(context);
-
-                            final createdTransaction = await transactionService
-                                .createTransaction(Transaction(
-                                    "",
-                                    _userInput.text,
-                                    _titleInput.text,
-                                    double.parse(_amountInput.text),
-                                    DateTime.now()));
-
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Created ${createdTransaction.title}'),
-                                action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () async => {
-                                          await transactionService
-                                              .deleteTransaction(
-                                                  createdTransaction)
-                                        }),
-                              ),
-                            );
-
-                            navigator.pop();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).primaryIconTheme.color,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          elevation: 1.0,
-                        ),
-                        child: const Text('Create Entry'),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )),
-    );
   }
 }
