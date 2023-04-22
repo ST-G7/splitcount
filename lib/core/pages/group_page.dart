@@ -20,29 +20,24 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
   Widget build(BuildContext context) {
     final isLightMode = selectedTheme.value == ThemeMode.light;
 
-    return CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.keyN): _showCreateGroupPage,
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Groups"),
-          leading: IconButton(
-              icon: Icon(isLightMode
-                  ? Icons.dark_mode_rounded
-                  : Icons.light_mode_rounded),
-              tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-              onPressed: () async {
-                await setSelectedTheme(
-                    isLightMode ? ThemeMode.dark : ThemeMode.light);
-                setState(() => {});
-              }),
-        ),
-        body: const GroupList(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _showCreateGroupPage,
-          child: const Icon(Icons.add),
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Groups"),
+        leading: IconButton(
+            icon: Icon(isLightMode
+                ? Icons.dark_mode_rounded
+                : Icons.light_mode_rounded),
+            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
+            onPressed: () async {
+              await setSelectedTheme(
+                  isLightMode ? ThemeMode.dark : ThemeMode.light);
+              setState(() => {});
+            }),
+      ),
+      body: const GroupList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateGroupPage,
+        child: const Icon(Icons.add),
       ),
     );
   }
