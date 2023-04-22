@@ -183,10 +183,18 @@ class NoTransactionsPlaceholder extends StatelessWidget {
           Container(
             height: 8,
           ),
-          Text(
-            "Group ${transactionService.getCurrentGroup().name} does not have any transactions yet",
-            style: Theme.of(context).textTheme.bodyMedium,
+          RichText(
             textAlign: TextAlign.center,
+            text: TextSpan(
+              style: Theme.of(context).textTheme.bodyMedium,
+              children: <TextSpan>[
+                const TextSpan(text: 'Group '),
+                TextSpan(
+                    text: transactionService.getCurrentGroup().name,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const TextSpan(text: ' does not have any transactions yet'),
+              ],
+            ),
           ),
           Container(
             height: 20,
