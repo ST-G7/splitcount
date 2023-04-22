@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:splitcount/core/services/group_service.dart';
-import 'package:splitcount/core/services/remote_transaction_service.dart';
 import 'package:splitcount/core/services/remote_group_service.dart';
 
 import 'package:splitcount/core/pages/group_page.dart';
@@ -37,8 +35,6 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<ITransactionService>(
-            create: (_) => RemoteTransactionService()),
         Provider<IGroupService>(create: (_) => RemoteGroupService()),
       ],
       child: const MyApp(),
@@ -57,13 +53,17 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
               title: 'Splitcount',
               theme: ThemeData(
-                  brightness: Brightness.light, primarySwatch: Colors.green),
+                brightness: Brightness.light,
+                primarySwatch: Colors.green,
+              ),
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
+                primarySwatch: Colors.green,
+                accentColor: Colors.green,
               ),
               themeMode: snapshot.data,
               debugShowCheckedModeBanner: false,
-              home: const GroupOverviewPage(title: 'GroupOverwiew'));
+              home: const GroupOverviewPage());
         });
   }
 }

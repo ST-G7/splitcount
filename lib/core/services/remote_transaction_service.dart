@@ -1,4 +1,5 @@
 import 'package:rxdart/rxdart.dart';
+import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 
@@ -11,8 +12,9 @@ class RemoteTransactionService implements ITransactionService {
 
   late Realtime realtime;
   late Databases databases;
+  late Group group;
 
-  RemoteTransactionService() {
+  RemoteTransactionService(this.group) {
     databases = Databases(appwriteClient);
     realtime = Realtime(appwriteClient);
   }
@@ -28,10 +30,21 @@ class RemoteTransactionService implements ITransactionService {
           "user": transaction.user,
           "amount": transaction.amount,
           "title": transaction.title,
-          "date": transaction.dateTime.toIso8601String()
+          "date": transaction.dateTime.toIso8601String(),
+          "group": transaction.group.id
         });
 
-    return Transaction.fromAppwriteDocument(document);
+    return getTransactionById(document.$id);
+  }
+
+  @override
+  Future<Transaction> getTransactionById(String id) async {
+    final document = await databases.getDocument(
+        databaseId: appwriteDatabaseId,
+        collectionId: transactionCollectionId,
+        documentId: id);
+
+    return Transaction.fromAppwriteDocument(document.data);
   }
 
   @override
@@ -43,24 +56,25 @@ class RemoteTransactionService implements ITransactionService {
   }
 
   @override
-  Stream<List<Transaction>> getTransactions() async* {
+  Stream<List<Transaction>> getLiveTransactions() async* {
     final subscription = realtime.subscribe([
       'databases.$appwriteDatabaseId.collections.$transactionCollectionId.documents'
     ]);
 
     yield* subscription.stream
         .asyncMap(_onHandleTransactionListChanged)
-        .startWith(await _getTransactionList());
+        .startWith(await getTransactions());
   }
 
-  Future<List<Transaction>> _getTransactionList() async {
+  @override
+  Future<List<Transaction>> getTransactions() async {
     final transactionDocuments = await databases.listDocuments(
         databaseId: appwriteDatabaseId,
         collectionId: transactionCollectionId,
-        queries: [Query.orderDesc("date")]);
+        queries: [Query.orderDesc("date"), Query.equal("group", group.id)]);
 
     final expenses = transactionDocuments.documents
-        .map(Transaction.fromAppwriteDocument)
+        .map((document) => Transaction.fromAppwriteDocument(document.data))
         .toList();
 
     return expenses;
@@ -69,6 +83,11 @@ class RemoteTransactionService implements ITransactionService {
   Future<List<Transaction>> _onHandleTransactionListChanged(
       RealtimeMessage event) {
     // TODO: We don't need to query the entire list again here
-    return _getTransactionList();
+    return getTransactions();
+  }
+
+  @override
+  Group getCurrentGroup() {
+    return group;
   }
 }

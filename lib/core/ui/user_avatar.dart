@@ -1,10 +1,5 @@
-import 'dart:io';
-
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:splitcount/core/helper/string_utils.dart';
-
-import '../../constants.dart';
 
 class UserAvatar extends StatefulWidget {
   final String userName;
