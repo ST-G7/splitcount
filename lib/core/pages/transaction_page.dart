@@ -40,7 +40,6 @@ class _TransactionPageState extends State<TransactionPage> {
                       CreateTransactionPage(widget.transactionService)),
             );
           },
-          backgroundColor: Colors.green,
           child: const Icon(Icons.add),
         ),
       ),
@@ -62,17 +61,22 @@ class _TransactionListState extends State<TransactionList> {
     return StreamBuilder<List<Transaction>>(
         stream: transactionService.getLiveTransactions(),
         builder: (context, snapshot) {
-          if (snapshot.data != null) {
+          var transactions = snapshot.data;
+          if (transactions != null) {
+            if (transactions.isEmpty) {
+              return const NoTransactionsPlaceholder();
+            }
+
             return ListView.separated(
                 separatorBuilder: (context, index) {
                   return const Divider(
                     height: 1,
                   );
                 },
-                itemCount: snapshot.data!.length,
+                itemCount: transactions.length,
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
-                  final transaction = snapshot.data![index];
+                  final transaction = transactions[index];
                   return Dismissible(
                     key: Key(transaction.id.toString()),
                     direction: DismissDirection.endToStart,
@@ -82,7 +86,8 @@ class _TransactionListState extends State<TransactionList> {
                       await transactionService.deleteTransaction(transaction);
 
                       messenger.showSnackBar(SnackBar(
-                        content: Text('Entry ${transaction.title} was delete'),
+                        content: Text(
+                            'Transaction ${transaction.title} was deleted.'),
                         action: SnackBarAction(
                           label: 'Undo',
                           onPressed: () async {
@@ -119,7 +124,7 @@ class _TransactionListState extends State<TransactionList> {
                             ]),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
                                 "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
@@ -132,7 +137,9 @@ class _TransactionListState extends State<TransactionList> {
                   );
                 });
           } else {
-            return const Text("No data available");
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         });
   }
@@ -148,5 +155,63 @@ class _TransactionListState extends State<TransactionList> {
             ? todayFormatter
             : dayFormatter;
     return correctFormatter.format(date);
+  }
+}
+
+class NoTransactionsPlaceholder extends StatelessWidget {
+  const NoTransactionsPlaceholder({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    var transactionService = context.read<ITransactionService>();
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.receipt,
+            size: 112,
+          ),
+          Text(
+            "No Transactions",
+            style: Theme.of(context).textTheme.headlineSmall,
+            textAlign: TextAlign.center,
+          ),
+          Container(
+            height: 8,
+          ),
+          Text(
+            "Group ${transactionService.getCurrentGroup().name} does not have any transactions yet",
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          Container(
+            height: 20,
+          ),
+          ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          CreateTransactionPage(transactionService)),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  "Create Transaction",
+                  textAlign: TextAlign.center,
+                ),
+              )),
+          Container(
+            height: 60, // Add to bottom for visual balance
+          ),
+        ],
+      ),
+    );
   }
 }

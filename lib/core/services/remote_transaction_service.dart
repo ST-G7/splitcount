@@ -87,7 +87,7 @@ class RemoteTransactionService implements ITransactionService {
   }
 
   @override
-  Future<Group> getCurrentGroup() {
-    return Future.value(group);
+  Group getCurrentGroup() {
+    return group;
   }
 }

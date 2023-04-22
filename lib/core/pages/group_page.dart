@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
@@ -19,31 +20,37 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
   Widget build(BuildContext context) {
     final isLightMode = selectedTheme.value == ThemeMode.light;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Groups"),
-        leading: IconButton(
-            icon: Icon(isLightMode
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded),
-            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-            onPressed: () async {
-              await setSelectedTheme(
-                  isLightMode ? ThemeMode.dark : ThemeMode.light);
-              setState(() => {});
-            }),
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyN): _showCreateGroupPage,
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Groups"),
+          leading: IconButton(
+              icon: Icon(isLightMode
+                  ? Icons.dark_mode_rounded
+                  : Icons.light_mode_rounded),
+              tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
+              onPressed: () async {
+                await setSelectedTheme(
+                    isLightMode ? ThemeMode.dark : ThemeMode.light);
+                setState(() => {});
+              }),
+        ),
+        body: const GroupList(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showCreateGroupPage,
+          child: const Icon(Icons.add),
+        ),
       ),
-      body: const GroupList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateGroupPage()),
-          );
-        },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
-      ),
+    );
+  }
+
+  _showCreateGroupPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateGroupPage()),
     );
   }
 }
@@ -121,7 +128,9 @@ class _GroupListState extends State<GroupList> {
                   );
                 });
           } else {
-            return const Text("No data available");
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         });
   }

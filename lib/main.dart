@@ -53,9 +53,13 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
               title: 'Splitcount',
               theme: ThemeData(
-                  brightness: Brightness.light, primarySwatch: Colors.green),
+                brightness: Brightness.light,
+                primarySwatch: Colors.green,
+              ),
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
+                primarySwatch: Colors.green,
+                accentColor: Colors.green,
               ),
               themeMode: snapshot.data,
               debugShowCheckedModeBanner: false,
