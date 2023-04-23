@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
@@ -61,7 +60,6 @@ class _GroupListState extends State<GroupList> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Group>>(
-        //TODO: is this correct, or should we use "StreamProvider" instead?
         stream: context.read<IGroupService>().getGroups(),
         builder: (context, snapshot) {
           if (snapshot.data != null) {
