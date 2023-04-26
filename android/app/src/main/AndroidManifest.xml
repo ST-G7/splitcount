@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.splitcount">
    <application
-        android:label="splitcount"
+        android:label="Splitcount"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

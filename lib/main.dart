@@ -5,7 +5,6 @@ import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/core/services/remote_group_service.dart';
 
 import 'package:splitcount/core/pages/group_page.dart';
-
 import 'package:provider/provider.dart';
 
 BehaviorSubject<ThemeMode> selectedTheme =
@@ -50,17 +49,24 @@ class MyApp extends StatelessWidget {
     return StreamBuilder<ThemeMode>(
         stream: selectedTheme.stream,
         builder: (context, snapshot) {
+          final lightTheme = ThemeData(
+            brightness: Brightness.light,
+            primarySwatch: Colors.green,
+          );
+
+          var darkTheme = ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.green,
+          );
+
+          darkTheme = darkTheme.copyWith(
+              colorScheme:
+                  darkTheme.colorScheme.copyWith(secondary: Colors.green));
+
           return MaterialApp(
               title: 'Splitcount',
-              theme: ThemeData(
-                brightness: Brightness.light,
-                primarySwatch: Colors.green,
-              ),
-              darkTheme: ThemeData(
-                brightness: Brightness.dark,
-                primarySwatch: Colors.green,
-                accentColor: Colors.green,
-              ),
+              theme: lightTheme,
+              darkTheme: darkTheme,
               themeMode: snapshot.data,
               debugShowCheckedModeBanner: false,
               home: const GroupOverviewPage());

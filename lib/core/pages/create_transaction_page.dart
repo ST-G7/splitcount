@@ -84,8 +84,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                 ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
 
-                            final group = await widget.transactionService
-                                .getCurrentGroup();
+                            final group =
+                                widget.transactionService.getCurrentGroup();
                             final createdTransaction = await widget
                                 .transactionService
                                 .createTransaction(Transaction(
