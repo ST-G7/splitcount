@@ -1,0 +1,8 @@
+{
+  "groups": "Groups",
+  "transactions": "Transactions",
+  "overview": "Overview",
+  "transactionDeleted": "Transaction {title} was deleted.",
+  "undo": "Undo",
+  "noTransactions": "No Transactions"
+}

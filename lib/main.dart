@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/core/services/local_settings_service.dart';
 import 'package:splitcount/core/services/remote_group_service.dart';
@@ -7,11 +8,13 @@ import 'package:splitcount/core/pages/group_page.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/services/settings_service.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   var localSettingsService = LocalSettingsService();
   await localSettingsService.isInitialized;
-
-  WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
     MultiProvider(
@@ -54,6 +57,8 @@ class MyApp extends StatelessWidget {
               darkTheme: darkTheme,
               themeMode: snapshot.data,
               debugShowCheckedModeBanner: false,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               home: const GroupOverviewPage());
         });
   }

@@ -5,6 +5,8 @@ import 'package:splitcount/core/pages/settings_page.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
 import 'package:splitcount/core/services/group_service.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class GroupOverviewPage extends StatefulWidget {
   const GroupOverviewPage({
     super.key,
@@ -19,7 +21,7 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Groups"),
+        title: Text(AppLocalizations.of(context)!.groups),
         actions: [
           IconButton(
               icon: const Icon(Icons.settings),
@@ -80,20 +82,7 @@ class _GroupListState extends State<GroupList> {
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) async {
-                      final messenger = ScaffoldMessenger.of(context);
                       await context.read<IGroupService>().deleteGroup(group);
-
-                      messenger.showSnackBar(SnackBar(
-                        content: Text('Group ${group.name} was deleted'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () async {
-                            await context
-                                .read<IGroupService>()
-                                .createGroup(group, index: index);
-                          },
-                        ),
-                      ));
                     },
                     child: ListTile(
                       leading: Container(
@@ -189,25 +178,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            final scaffoldMessenger =
-                                ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
-
-                            final createdGroup = await groupService.createGroup(
-                                Group("", _groupName.text, _groupOwner.text,
-                                    <String>[]));
-
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text('Created ${createdGroup.name}'),
-                                action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () async => {
-                                          await groupService
-                                              .deleteGroup(createdGroup)
-                                        }),
-                              ),
-                            );
+                            await groupService.createGroup(Group("",
+                                _groupName.text, _groupOwner.text, <String>[]));
 
                             navigator.pop();
                           }
