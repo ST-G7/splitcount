@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
+import 'package:splitcount/core/pages/settings_page.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
 import 'package:splitcount/core/services/group_service.dart';
-import 'package:splitcount/main.dart';
 
 class GroupOverviewPage extends StatefulWidget {
   const GroupOverviewPage({
@@ -17,27 +17,28 @@ class GroupOverviewPage extends StatefulWidget {
 class _GroupOverviewPageState extends State<GroupOverviewPage> {
   @override
   Widget build(BuildContext context) {
-    final isLightMode = selectedTheme.value == ThemeMode.light;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Groups"),
-        leading: IconButton(
-            icon: Icon(isLightMode
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded),
-            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-            onPressed: () async {
-              await setSelectedTheme(
-                  isLightMode ? ThemeMode.dark : ThemeMode.light);
-              setState(() => {});
-            }),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: 'Show settings page',
+              onPressed: _showSettingsPage)
+        ],
       ),
       body: const GroupList(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateGroupPage,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  _showSettingsPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsPage()),
     );
   }
 
