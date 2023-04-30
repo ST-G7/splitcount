@@ -7,9 +7,6 @@ on:
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      checks: read
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2

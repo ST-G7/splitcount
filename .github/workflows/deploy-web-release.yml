@@ -10,9 +10,6 @@ name: Deploy Web Release
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      checks: read
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
