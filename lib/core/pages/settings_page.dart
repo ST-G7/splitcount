@@ -123,7 +123,7 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   Widget _createLanguageDialog(ISettingsService settingsService) {
-    String? platformLanguageCode = null;
+    String? platformLanguageCode;
     try {
       platformLanguageCode = Platform.localeName.split('_')[0].toUpperCase();
     }
