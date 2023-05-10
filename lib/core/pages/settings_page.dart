@@ -123,6 +123,13 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   Widget _createLanguageDialog(ISettingsService settingsService) {
+    String? platformLanguageCode = null;
+    try {
+      platformLanguageCode = Platform.localeName.split('_')[0].toUpperCase();
+    }
+    // ignore: empty_catches
+    catch (e) {}
+
     return StreamBuilder<Locale?>(
       stream: settingsService.getLocale(),
       builder: (BuildContext context, AsyncSnapshot<Locale?> snapshot) {
@@ -137,8 +144,9 @@ class _SettingsPage extends State<SettingsPage> {
                 if (index == 0) {
                   return RadioListTile(
                     title: const Text("System"),
-                    subtitle:
-                        Text(Platform.localeName.split('_')[0].toUpperCase()),
+                    subtitle: platformLanguageCode != null
+                        ? Text(platformLanguageCode)
+                        : null,
                     value: null,
                     onChanged: (value) =>
                         settingsService.setPreferredLocale(null),
