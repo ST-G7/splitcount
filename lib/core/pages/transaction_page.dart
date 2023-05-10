@@ -90,11 +90,12 @@ class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
     var transactionService = context.read<ITransactionService>();
+
     return StreamBuilder<List<Transaction>>(
         stream: transactionService.getLiveTransactions(),
         builder: (context, snapshot) {
           var transactions = snapshot.data;
-          if (transactions != null) {
+          if (snapshot.hasData && transactions != null) {
             if (transactions.isEmpty) {
               return const NoTransactionsPlaceholder();
             }
@@ -173,9 +174,7 @@ class _TransactionListState extends State<TransactionList> {
                   );
                 });
           } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
         });
   }

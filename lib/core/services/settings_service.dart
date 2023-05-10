@@ -10,4 +10,12 @@ abstract class ISettingsService {
   Stream<bool> isDarkMode();
 
   Future setThemeMode(ThemeMode mode);
+
+  Stream<Locale?> getLocale();
+
+  Locale? getCurrentLocale();
+
+  Future setPreferredLocale(String? code);
+
+  Stream onSettingsChanged();
 }

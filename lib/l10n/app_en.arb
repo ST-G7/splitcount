@@ -4,5 +4,11 @@
   "overview": "Overview",
   "transactionDeleted": "Transaction {title} was deleted.",
   "undo": "Undo",
-  "noTransactions": "No Transactions"
+  "noTransactions": "No Transactions",
+  "settings": "Settings",
+  "language": "Language",
+  "languages": "Languages",
+  "chooseCustomTheme": "Choose custom theme",
+  "themeDefaultModeNotice": "Leave disabled to use system theme",
+  "common": "common"
 }

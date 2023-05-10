@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/core/services/local_settings_service.dart';
 import 'package:splitcount/core/services/remote_group_service.dart';
@@ -34,8 +33,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final settingsService = context.read<ISettingsService>();
 
-    return StreamBuilder<ThemeMode>(
-        stream: settingsService.getThemeMode(),
+    return StreamBuilder(
+        stream: settingsService.onSettingsChanged(),
         builder: (context, snapshot) {
           final lightTheme = ThemeData(
             brightness: Brightness.light,
@@ -55,7 +54,8 @@ class MyApp extends StatelessWidget {
               title: 'Splitcount',
               theme: lightTheme,
               darkTheme: darkTheme,
-              themeMode: snapshot.data,
+              locale: settingsService.getCurrentLocale(),
+              themeMode: settingsService.getCurrentThemeMode(),
               debugShowCheckedModeBanner: false,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,

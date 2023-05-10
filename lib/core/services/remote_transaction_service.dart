@@ -5,7 +5,7 @@ import 'package:splitcount/core/services/transaction_service.dart';
 
 import 'package:appwrite/appwrite.dart';
 
-import '../../constants.dart';
+import 'package:splitcount/constants.dart';
 
 class RemoteTransactionService implements ITransactionService {
   static const String transactionCollectionId = "64327dbba600a97fc0fa";

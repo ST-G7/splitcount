@@ -25,7 +25,7 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
         actions: [
           IconButton(
               icon: const Icon(Icons.settings),
-              tooltip: 'Show settings page',
+              tooltip: AppLocalizations.of(context)!.settings,
               onPressed: _showSettingsPage)
         ],
       ),
@@ -40,7 +40,7 @@ class _GroupOverviewPageState extends State<GroupOverviewPage> {
   _showSettingsPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SettingsPage()),
+      MaterialPageRoute(builder: (context) => SettingsPage()),
     );
   }
 
