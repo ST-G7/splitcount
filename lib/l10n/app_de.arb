@@ -1,0 +1,14 @@
+{
+  "groups": "Gruppen",
+  "transactions": "Transaktionen",
+  "overview": "Übersicht",
+  "transactionDeleted": "Transaktion {title} wurde gelöscht.",
+  "undo": "Rückgängig",
+  "noTransactions": "Keine Transaktionen",
+  "settings": "Einstellungen",
+  "language": "Sprache",
+  "languages": "Sprachen",
+  "chooseCustomTheme": "Theme beliebig wählen",
+  "themeDefaultModeNotice": "Ausgeschalten lassen um Systemwert zu übernehmen.",
+  "common": "Allgemein"
+}

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
+import 'package:splitcount/core/pages/settings_page.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
 import 'package:splitcount/core/services/group_service.dart';
-import 'package:splitcount/main.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class GroupOverviewPage extends StatefulWidget {
   const GroupOverviewPage({
@@ -17,27 +19,28 @@ class GroupOverviewPage extends StatefulWidget {
 class _GroupOverviewPageState extends State<GroupOverviewPage> {
   @override
   Widget build(BuildContext context) {
-    final isLightMode = selectedTheme.value == ThemeMode.light;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Groups"),
-        leading: IconButton(
-            icon: Icon(isLightMode
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded),
-            tooltip: isLightMode ? 'Enable dark mode' : 'Enable light mode',
-            onPressed: () async {
-              await setSelectedTheme(
-                  isLightMode ? ThemeMode.dark : ThemeMode.light);
-              setState(() => {});
-            }),
+        title: Text(AppLocalizations.of(context)!.groups),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: AppLocalizations.of(context)!.settings,
+              onPressed: _showSettingsPage)
+        ],
       ),
       body: const GroupList(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateGroupPage,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  _showSettingsPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SettingsPage()),
     );
   }
 
@@ -79,20 +82,7 @@ class _GroupListState extends State<GroupList> {
                     direction: DismissDirection.endToStart,
                     background: Container(color: Colors.red),
                     onDismissed: (direction) async {
-                      final messenger = ScaffoldMessenger.of(context);
                       await context.read<IGroupService>().deleteGroup(group);
-
-                      messenger.showSnackBar(SnackBar(
-                        content: Text('Group ${group.name} was deleted'),
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () async {
-                            await context
-                                .read<IGroupService>()
-                                .createGroup(group, index: index);
-                          },
-                        ),
-                      ));
                     },
                     child: ListTile(
                       leading: Container(
@@ -188,25 +178,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                       child: ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            final scaffoldMessenger =
-                                ScaffoldMessenger.of(context);
                             final navigator = Navigator.of(context);
-
-                            final createdGroup = await groupService.createGroup(
-                                Group("", _groupName.text, _groupOwner.text,
-                                    <String>[]));
-
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text('Created ${createdGroup.name}'),
-                                action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () async => {
-                                          await groupService
-                                              .deleteGroup(createdGroup)
-                                        }),
-                              ),
-                            );
+                            await groupService.createGroup(Group("",
+                                _groupName.text, _groupOwner.text, <String>[]));
 
                             navigator.pop();
                           }

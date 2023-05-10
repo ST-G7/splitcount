@@ -9,6 +9,8 @@ import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:splitcount/core/services/remote_transaction_service.dart';
 import 'package:splitcount/core/ui/user_avatar.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class TransactionPage extends StatefulWidget {
   TransactionPage(this.group, {super.key}) {
     transactionService = RemoteTransactionService(group);
@@ -46,9 +48,9 @@ class _TransactionPageState extends State<TransactionPage>
           bottom: TabBar(
             controller: _controller,
             indicatorSize: TabBarIndicatorSize.tab,
-            tabs: const <Tab>[
-              Tab(text: 'Transactions'),
-              Tab(text: 'Overview'),
+            tabs: <Tab>[
+              Tab(text: AppLocalizations.of(context)!.transactions),
+              Tab(text: AppLocalizations.of(context)!.overview),
             ],
           ),
         ),
@@ -88,11 +90,12 @@ class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
     var transactionService = context.read<ITransactionService>();
+
     return StreamBuilder<List<Transaction>>(
         stream: transactionService.getLiveTransactions(),
         builder: (context, snapshot) {
           var transactions = snapshot.data;
-          if (transactions != null) {
+          if (snapshot.hasData && transactions != null) {
             if (transactions.isEmpty) {
               return const NoTransactionsPlaceholder();
             }
@@ -113,13 +116,17 @@ class _TransactionListState extends State<TransactionList> {
                     background: Container(color: Colors.red),
                     onDismissed: (direction) async {
                       final messenger = ScaffoldMessenger.of(context);
+                      var transactionDeletedText = AppLocalizations.of(context)!
+                          .transactionDeleted(transaction.title);
+
+                      var undoText = AppLocalizations.of(context)!.undo;
+
                       await transactionService.deleteTransaction(transaction);
 
                       messenger.showSnackBar(SnackBar(
-                        content: Text(
-                            'Transaction ${transaction.title} was deleted.'),
+                        content: Text(transactionDeletedText),
                         action: SnackBarAction(
-                          label: 'Undo',
+                          label: undoText,
                           onPressed: () async {
                             await transactionService
                                 .createTransaction(transaction, index: index);
@@ -167,9 +174,7 @@ class _TransactionListState extends State<TransactionList> {
                   );
                 });
           } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
         });
   }
@@ -206,7 +211,7 @@ class NoTransactionsPlaceholder extends StatelessWidget {
             size: 112,
           ),
           Text(
-            "No Transactions",
+            AppLocalizations.of(context)!.noTransactions,
             style: Theme.of(context).textTheme.headlineSmall,
             textAlign: TextAlign.center,
           ),
