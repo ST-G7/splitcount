@@ -13,12 +13,12 @@ import 'package:splitcount/core/ui/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TransactionPage extends StatefulWidget {
-  TransactionPage(this.group, {super.key}) {
-    transactionService = RemoteTransactionService(group);
+  TransactionPage(this._group, {super.key}) {
+    transactionService = RemoteTransactionService(_group);
   }
 
-  Group group;
   late final ITransactionService transactionService;
+  final Group _group;
 
   @override
   State<TransactionPage> createState() => _TransactionPageState();
@@ -29,8 +29,12 @@ class _TransactionPageState extends State<TransactionPage>
   late TabController _controller;
   var _selectedTabIndex = 0;
 
+  late Group group;
+
   @override
   void initState() {
+    group = widget._group;
+
     super.initState();
     _controller =
         TabController(length: 2, vsync: this, initialIndex: _selectedTabIndex);
@@ -45,7 +49,7 @@ class _TransactionPageState extends State<TransactionPage>
       create: (_) => widget.transactionService,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.group.name),
+          title: Text(group.name),
           actions: [
             IconButton(
                 icon: const Icon(Icons.settings),
@@ -87,12 +91,12 @@ class _TransactionPageState extends State<TransactionPage>
   _showGroupSettings() async {
     var updatedGroup = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditGroupPage(widget.group)),
+      MaterialPageRoute(builder: (context) => EditGroupPage(group)),
     );
 
     if (updatedGroup != null) {
       setState(() {
-        widget.group = updatedGroup;
+        group = updatedGroup;
       });
     }
   }
