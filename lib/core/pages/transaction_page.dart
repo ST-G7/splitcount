@@ -5,6 +5,7 @@ import 'package:splitcount/core/models/group.dart';
 
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/pages/create_transaction_page.dart';
+import 'package:splitcount/core/pages/edit_group_page.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:splitcount/core/services/remote_transaction_service.dart';
 import 'package:splitcount/core/ui/user_avatar.dart';
@@ -16,7 +17,7 @@ class TransactionPage extends StatefulWidget {
     transactionService = RemoteTransactionService(group);
   }
 
-  final Group group;
+  Group group;
   late final ITransactionService transactionService;
 
   @override
@@ -45,6 +46,12 @@ class _TransactionPageState extends State<TransactionPage>
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.group.name),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.settings),
+                tooltip: AppLocalizations.of(context)!.settings,
+                onPressed: _showGroupSettings)
+          ],
           bottom: TabBar(
             controller: _controller,
             indicatorSize: TabBarIndicatorSize.tab,
@@ -73,9 +80,21 @@ class _TransactionPageState extends State<TransactionPage>
                 child: const Icon(Icons.add),
               )
             : null,
-        /*floatingActionButton: */
       ),
     );
+  }
+
+  _showGroupSettings() async {
+    var updatedGroup = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditGroupPage(widget.group)),
+    );
+
+    if (updatedGroup != null) {
+      setState(() {
+        widget.group = updatedGroup;
+      });
+    }
   }
 }
 

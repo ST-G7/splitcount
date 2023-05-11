@@ -10,5 +10,11 @@
   "languages": "Languages",
   "chooseCustomTheme": "Choose custom theme",
   "themeDefaultModeNotice": "Leave disabled to use system theme",
-  "common": "common"
+  "common": "Common",
+  "create": "Create",
+  "createGroup": "Create Group",
+  "editGroup": "Edit Group",
+  "groupName": "Name",
+  "groupDescription": "Description",
+  "save": "Save"
 }

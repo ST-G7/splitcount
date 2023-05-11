@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
+import 'package:splitcount/core/pages/create_group_page.dart';
 import 'package:splitcount/core/pages/settings_page.dart';
 import 'package:splitcount/core/pages/transaction_page.dart';
 import 'package:splitcount/core/services/group_service.dart';
@@ -94,6 +95,7 @@ class _GroupListState extends State<GroupList> {
                           child: const Align(alignment: Alignment.center)),
                       title: Text(group.name),
 
+                      trailing: const Icon(Icons.chevron_right),
                       subtitle: Text(group.members.join(", "),
                           overflow: TextOverflow.ellipsis),
 
@@ -116,89 +118,5 @@ class _GroupListState extends State<GroupList> {
             );
           }
         });
-  }
-}
-
-class CreateGroupPage extends StatefulWidget {
-  const CreateGroupPage({super.key});
-
-  @override
-  State<CreateGroupPage> createState() => _CreateGroupPageState();
-}
-
-class _CreateGroupPageState extends State<CreateGroupPage> {
-  final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _groupName = TextEditingController();
-  final TextEditingController _groupOwner = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    var groupService = context.read<IGroupService>();
-
-    return Material(
-      child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Create Group'),
-          ),
-          body: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    autofocus: true,
-                    controller: _groupName,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please provide a valid group name';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Group Name'),
-                  ),
-                  TextFormField(
-                    controller: _groupOwner,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Enter your name';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                        labelText: 'this will be omitted in the future'),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            final navigator = Navigator.of(context);
-                            await groupService.createGroup(Group("",
-                                _groupName.text, _groupOwner.text, <String>[]));
-
-                            navigator.pop();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).primaryIconTheme.color,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          elevation: 1.0,
-                        ),
-                        child: const Text('Create Entry'),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )),
-    );
   }
 }

@@ -20,17 +20,23 @@ class RemoteGroupService implements IGroupService {
   }
 
   @override
-  Future<Group> createGroup(Group group, {int? index}) async {
+  Future<Group> createGroup(Group group) async {
     var document = await databases.createDocument(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         documentId: ID.unique(),
-        data: {
-          "groupName": group.name,
-          "owner": group.owner,
-          "members": group.members,
-        });
+        data: group.toDataMap());
 
+    return Group.fromAppwriteDocument(document.data);
+  }
+
+  @override
+  Future<Group> updateGroup(Group group) async {
+    var document = await databases.updateDocument(
+        databaseId: appwriteDatabaseId,
+        collectionId: groupCollectionId,
+        documentId: group.id,
+        data: group.toDataMap());
     return Group.fromAppwriteDocument(document.data);
   }
 
@@ -59,7 +65,7 @@ class RemoteGroupService implements IGroupService {
         collectionId: groupCollectionId,
         queries: [
           Query.orderDesc("\$createdAt"),
-          Query.select(["groupName", "owner", "members"])
+          Query.select(["groupName", "owner", "members", "description"])
         ]);
     // queries: [Query.equal("owner", [currentUser])]);
 

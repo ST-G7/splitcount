@@ -10,5 +10,11 @@
   "languages": "Sprachen",
   "chooseCustomTheme": "Theme beliebig wählen",
   "themeDefaultModeNotice": "Ausgeschalten lassen um Systemwert zu übernehmen.",
-  "common": "Allgemein"
+  "common": "Allgemein",
+  "create": "Erstellen",
+  "createGroup": "Gruppe erstellen",
+  "editGroup": "Gruppe bearbeiten",
+  "groupName": "Name",
+  "groupDescription": "Beschreibung",
+  "save": "Speichern"
 }
