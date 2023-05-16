@@ -1,6 +1,8 @@
 import 'package:splitcount/core/models/group.dart';
 
-abstract class IGroupService {
+abstract interface class IGroupService {
+  Future<Group> getGroupById(String groupId);
+
   Future<Group> createGroup(Group group);
 
   Future<Group> updateGroup(Group group);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreateTransactionPage extends StatefulWidget {
   final ITransactionService transactionService;
@@ -24,12 +25,12 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     return Material(
       child: Scaffold(
           appBar: AppBar(
-            title: const Text('Create Transaction'),
+            title: Text(AppLocalizations.of(context)!.createTransaction),
           ),
           body: Form(
             key: _formKey,
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -114,9 +115,6 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).primaryIconTheme.color,
-                          backgroundColor: Theme.of(context).primaryColor,
                           elevation: 1.0,
                         ),
                         child: const Text('Create Entry'),

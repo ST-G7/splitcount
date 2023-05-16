@@ -1,106 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:splitcount/core/models/group.dart';
-
 import 'package:splitcount/core/models/transaction.dart';
-import 'package:splitcount/core/pages/create_transaction_page.dart';
-import 'package:splitcount/core/pages/edit_group_page.dart';
+import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
-import 'package:splitcount/core/services/remote_transaction_service.dart';
-import 'package:splitcount/core/ui/user_avatar.dart';
-
+import 'package:splitcount/core/ui/initials_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-class TransactionPage extends StatefulWidget {
-  TransactionPage(this._group, {super.key}) {
-    transactionService = RemoteTransactionService(_group);
-  }
-
-  late final ITransactionService transactionService;
-  final Group _group;
-
-  @override
-  State<TransactionPage> createState() => _TransactionPageState();
-}
-
-class _TransactionPageState extends State<TransactionPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _controller;
-  var _selectedTabIndex = 0;
-
-  late Group group;
-
-  @override
-  void initState() {
-    group = widget._group;
-
-    super.initState();
-    _controller =
-        TabController(length: 2, vsync: this, initialIndex: _selectedTabIndex);
-    _controller.addListener(() => setState(() {
-          _selectedTabIndex = _controller.index;
-        }));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Provider<ITransactionService>(
-      create: (_) => widget.transactionService,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(group.name),
-          actions: [
-            IconButton(
-                icon: const Icon(Icons.settings),
-                tooltip: AppLocalizations.of(context)!.settings,
-                onPressed: _showGroupSettings)
-          ],
-          bottom: TabBar(
-            controller: _controller,
-            indicatorSize: TabBarIndicatorSize.tab,
-            tabs: <Tab>[
-              Tab(text: AppLocalizations.of(context)!.transactions),
-              Tab(text: AppLocalizations.of(context)!.overview),
-            ],
-          ),
-        ),
-        body: TabBarView(controller: _controller, children: const [
-          TransactionList(),
-          Center(
-            child: Text("Not yet implemented"),
-          )
-        ]),
-        floatingActionButton: _selectedTabIndex == 0
-            ? FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            CreateTransactionPage(widget.transactionService)),
-                  );
-                },
-                child: const Icon(Icons.add),
-              )
-            : null,
-      ),
-    );
-  }
-
-  _showGroupSettings() async {
-    var updatedGroup = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => EditGroupPage(group)),
-    );
-
-    if (updatedGroup != null) {
-      setState(() {
-        group = updatedGroup;
-      });
-    }
-  }
-}
 
 class TransactionList extends StatefulWidget {
   const TransactionList({super.key});
@@ -178,7 +83,7 @@ class _TransactionListState extends State<TransactionList> {
                             children: [
                               const Text("paid by"),
                               const SizedBox(width: 4),
-                              UserAvatar(transaction.user, 18),
+                              InitialsAvatar(text: transaction.user, size: 18),
                               const SizedBox(width: 2),
                               Text(transaction.user)
                             ]),
@@ -241,18 +146,11 @@ class NoTransactionsPlaceholder extends StatelessWidget {
           Container(
             height: 8,
           ),
-          RichText(
+          Text(
+            AppLocalizations.of(context)!
+                .groupNoTransactions(transactionService.getCurrentGroup().name),
+            style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
-            text: TextSpan(
-              style: Theme.of(context).textTheme.bodyMedium,
-              children: <TextSpan>[
-                const TextSpan(text: 'Group '),
-                TextSpan(
-                    text: transactionService.getCurrentGroup().name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const TextSpan(text: ' does not have any transactions yet'),
-              ],
-            ),
           ),
           Container(
             height: 20,
@@ -266,10 +164,10 @@ class NoTransactionsPlaceholder extends StatelessWidget {
                           CreateTransactionPage(transactionService)),
                 );
               },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "Create Transaction",
+                  AppLocalizations.of(context)!.createTransaction,
                   textAlign: TextAlign.center,
                 ),
               )),

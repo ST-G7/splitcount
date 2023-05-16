@@ -20,6 +20,15 @@ class RemoteGroupService implements IGroupService {
   }
 
   @override
+  Future<Group> getGroupById(String groupId) async {
+    var document = await databases.getDocument(
+        databaseId: appwriteDatabaseId,
+        collectionId: groupCollectionId,
+        documentId: groupId);
+    return Group.fromAppwriteDocument(document.data);
+  }
+
+  @override
   Future<Group> createGroup(Group group) async {
     var document = await databases.createDocument(
         databaseId: appwriteDatabaseId,

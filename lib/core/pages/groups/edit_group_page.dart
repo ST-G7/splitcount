@@ -49,7 +49,7 @@ class _EditGroupPageState extends State<EditGroupPage> {
           body: Form(
             key: _formKey,
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
