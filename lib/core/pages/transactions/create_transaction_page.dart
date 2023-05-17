@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,9 +17,30 @@ class CreateTransactionPage extends StatefulWidget {
 class _CreateTransactionPageState extends State<CreateTransactionPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _userInput = TextEditingController();
   final TextEditingController _titleInput = TextEditingController();
   final TextEditingController _amountInput = TextEditingController();
+
+  late final Group group;
+  late String transactionUser;
+
+  bool canSubmit = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controllerListener() {
+      setState(() {
+        canSubmit = _titleInput.text.isNotEmpty && _amountInput.text.isNotEmpty;
+      });
+    }
+
+    _titleInput.addListener(controllerListener);
+    _amountInput.addListener(controllerListener);
+
+    group = widget.transactionService.getCurrentGroup();
+    transactionUser = group.members.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,60 +85,56 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                       labelText: 'Amount',
                     ),
                   ),
-                  TextFormField(
-                    controller: _userInput,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Enter a user';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Person'),
-                  ),
+                  DropdownButton<String>(
+                      icon: const Icon(Icons.person),
+                      isExpanded: true,
+                      value: transactionUser,
+                      items: _getDropDownMenuItems(group),
+                      onChanged: (selected) =>
+                          {setState(() => transactionUser = selected!)}),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: SizedBox(
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            final scaffoldMessenger =
-                                ScaffoldMessenger.of(context);
-                            final navigator = Navigator.of(context);
+                        onPressed: canSubmit
+                            ? () async {
+                                if (_formKey.currentState!.validate()) {
+                                  final scaffoldMessenger =
+                                      ScaffoldMessenger.of(context);
+                                  final navigator = Navigator.of(context);
 
-                            final group =
-                                widget.transactionService.getCurrentGroup();
-                            final createdTransaction = await widget
-                                .transactionService
-                                .createTransaction(Transaction(
-                                    "",
-                                    _userInput.text,
-                                    _titleInput.text,
-                                    double.parse(_amountInput.text),
-                                    DateTime.now(),
-                                    group));
+                                  final group = widget.transactionService
+                                      .getCurrentGroup();
+                                  final createdTransaction = await widget
+                                      .transactionService
+                                      .createTransaction(Transaction(
+                                          "",
+                                          transactionUser,
+                                          _titleInput.text,
+                                          double.parse(_amountInput.text),
+                                          DateTime.now(),
+                                          group));
 
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content:
-                                    Text('Created ${createdTransaction.title}'),
-                                action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () async => {
-                                          await widget.transactionService
-                                              .deleteTransaction(
-                                                  createdTransaction)
-                                        }),
-                              ),
-                            );
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Created ${createdTransaction.title}'),
+                                      action: SnackBarAction(
+                                          label: 'Undo',
+                                          onPressed: () async => {
+                                                await widget.transactionService
+                                                    .deleteTransaction(
+                                                        createdTransaction)
+                                              }),
+                                    ),
+                                  );
 
-                            navigator.pop();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 1.0,
-                        ),
+                                  navigator.pop();
+                                }
+                              }
+                            : null,
                         child: const Text('Create Entry'),
                       ),
                     ),
@@ -126,5 +144,14 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
             ),
           )),
     );
+  }
+
+  List<DropdownMenuItem<String>> _getDropDownMenuItems(Group group) {
+    return group.members
+        .map((member) => DropdownMenuItem<String>(
+              value: member,
+              child: Text(member),
+            ))
+        .toList();
   }
 }

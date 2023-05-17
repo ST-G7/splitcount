@@ -15,10 +15,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ownerController = TextEditingController();
+  final TextEditingController _newMemberController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   bool canSubmit = false;
+
+  final members = <String>{};
 
   @override
   void initState() {
@@ -26,13 +28,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
     controllerListener() {
       setState(() {
-        canSubmit =
-            _nameController.text.isNotEmpty && _ownerController.text.isNotEmpty;
+        canSubmit = _nameController.text.isNotEmpty && members.isNotEmpty;
       });
     }
 
     _nameController.addListener(controllerListener);
-    _ownerController.addListener(controllerListener);
+    _newMemberController.addListener(controllerListener);
   }
 
   @override
@@ -71,16 +72,52 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         labelText:
                             AppLocalizations.of(context)!.groupDescription),
                   ),
-                  TextFormField(
-                    controller: _ownerController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Enter your name';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                        labelText: 'this will be omitted in the future'),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Text("Users"),
+                  ),
+                  Flexible(
+                    child: ListView.separated(
+                        shrinkWrap: true,
+                        itemBuilder: (_, index) {
+                          final member = members.toList()[index];
+
+                          return ListTile(
+                              contentPadding: const EdgeInsets.all(0),
+                              title: Text(member),
+                              subtitle: index == 0 ? const Text("Owner") : null,
+                              leading: index == 0
+                                  ? const Icon(Icons.engineering)
+                                  : const Icon(Icons.person),
+                              trailing: ElevatedButton.icon(
+                                label: const Text("Remove"),
+                                icon: const Icon(Icons.person_remove),
+                                onPressed: () => _removeMember(member),
+                              ));
+                        },
+                        separatorBuilder: (context, index) {
+                          return const Divider(
+                            height: 1,
+                          );
+                        },
+                        itemCount: members.length),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _newMemberController,
+                          decoration:
+                              const InputDecoration(labelText: 'User Name'),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _addMember,
+                        icon: const Icon(Icons.person_add),
+                        label: const Text("Add User"),
+                      )
+                    ],
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -99,7 +136,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     "",
                                     _nameController.text,
                                     _descriptionController.text,
-                                    _ownerController.text, <String>[]));
+                                    members.first, // TODO: Do we need an owner?
+                                    members.toList()));
 
                                 navigator.pop();
                               }
@@ -119,5 +157,33 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             ),
           )),
     );
+  }
+
+  _addMember() {
+    var memberName = _newMemberController.text;
+    if (memberName.isEmpty) {
+      // TODO: We should probably show some kind of error
+      return;
+    }
+
+    if (members.contains(memberName)) {
+      // TODO: We should probably show some kind of error
+      return;
+    }
+
+    setState(() {
+      members.add(memberName);
+      _newMemberController.clear();
+    });
+  }
+
+  _removeMember(String memberName) {
+    if (!members.contains(memberName)) {
+      return;
+    }
+
+    setState(() {
+      members.remove(memberName);
+    });
   }
 }

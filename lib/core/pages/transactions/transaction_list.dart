@@ -83,7 +83,7 @@ class _TransactionListState extends State<TransactionList> {
                             children: [
                               const Text("paid by"),
                               const SizedBox(width: 4),
-                              InitialsAvatar(text: transaction.user, size: 18),
+                              InitialsAvatar(text: transaction.user, radius: 8),
                               const SizedBox(width: 2),
                               Text(transaction.user)
                             ]),

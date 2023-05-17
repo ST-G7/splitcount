@@ -3,9 +3,9 @@ import 'package:splitcount/core/helper/string_utils.dart';
 
 class InitialsAvatar extends StatefulWidget {
   final String text;
-  final int size;
+  final int radius;
 
-  const InitialsAvatar({required this.text, required this.size, super.key});
+  const InitialsAvatar({required this.text, required this.radius, super.key});
 
   @override
   State<InitialsAvatar> createState() => _InitialsAvatarState();
@@ -19,13 +19,21 @@ class _InitialsAvatarState extends State<InitialsAvatar> {
   void initState() {
     super.initState();
     _initials = widget.text.computeInitials();
-    _fontSize = widget.size.toDouble() / ((_initials.length == 1) ? 2 : 2.5);
+    _fontSize = widget.radius.toDouble();
+
+    if (_initials.length == 2) {
+      _fontSize = _fontSize / 1.25;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-        radius: widget.size.toDouble(),
-        child: Text(_initials, style: TextStyle(fontSize: _fontSize)));
+        radius: widget.radius.toDouble(),
+        child: Text(_initials,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: _fontSize,
+            )));
   }
 }

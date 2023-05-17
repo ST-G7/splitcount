@@ -38,7 +38,7 @@ class _GroupListState extends State<GroupList> {
                       await context.read<IGroupService>().deleteGroup(group);
                     },
                     child: ListTile(
-                      leading: InitialsAvatar(text: group.name, size: 40),
+                      leading: InitialsAvatar(text: group.name, radius: 20),
                       title: Text(group.name),
 
                       trailing: const Icon(Icons.chevron_right),
