@@ -65,6 +65,7 @@ class LocalSettingsService implements ISettingsService {
   }
 
   bool _isSystemThemeDarkMode() {
+    // ignore: deprecated_member_use
     var brightness = SchedulerBinding.instance.window.platformBrightness;
     return brightness == Brightness.dark;
   }

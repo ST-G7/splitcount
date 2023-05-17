@@ -1,7 +1,7 @@
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 
-abstract class ITransactionService {
+abstract interface class ITransactionService {
   Group getCurrentGroup();
 
   Future<Transaction> getTransactionById(String id);

@@ -5,10 +5,19 @@
   "transactionDeleted": "Transaction {title} was deleted.",
   "undo": "Undo",
   "noTransactions": "No Transactions",
+  "groupNoTransactions": "Group {group} does not have any transactions yet.",
+  "createTransaction": "Create Transaction",
   "settings": "Settings",
   "language": "Language",
   "languages": "Languages",
   "chooseCustomTheme": "Choose custom theme",
   "themeDefaultModeNotice": "Leave disabled to use system theme",
-  "common": "common"
+  "common": "Common",
+  "create": "Create",
+  "createGroup": "Create Group",
+  "editGroup": "Edit Group",
+  "groupName": "Name",
+  "groupDescription": "Description",
+  "save": "Save",
+  "shareGroup": "Share Group"
 }

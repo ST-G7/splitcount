@@ -5,10 +5,19 @@
   "transactionDeleted": "Transaktion {title} wurde gelöscht.",
   "undo": "Rückgängig",
   "noTransactions": "Keine Transaktionen",
+  "groupNoTransactions": "Gruppe {group} hat noch keine Transaktionen.",
+  "createTransaction": "Transaktion erstellen",
   "settings": "Einstellungen",
   "language": "Sprache",
   "languages": "Sprachen",
   "chooseCustomTheme": "Theme beliebig wählen",
   "themeDefaultModeNotice": "Ausgeschalten lassen um Systemwert zu übernehmen.",
-  "common": "Allgemein"
+  "common": "Allgemein",
+  "create": "Erstellen",
+  "createGroup": "Gruppe erstellen",
+  "editGroup": "Gruppe bearbeiten",
+  "groupName": "Name",
+  "groupDescription": "Beschreibung",
+  "save": "Speichern",
+  "shareGroup": "Gruppe Teilen"
 }

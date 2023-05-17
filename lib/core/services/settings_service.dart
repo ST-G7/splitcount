@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract class ISettingsService {
+abstract interface class ISettingsService {
   ThemeMode getCurrentThemeMode();
 
   Stream<ThemeMode> getThemeMode();
