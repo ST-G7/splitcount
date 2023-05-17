@@ -31,8 +31,8 @@ jobs:
       # - run: flutter test
 
       # Flutter build for supported platforms
-      - run: flutter build web
-      - run: flutter build apk
+      - run: flutter build web --no-tree-shake-icons
+      - run: flutter build apk --no-tree-shake-icons
 
       # Upload generated apk to the artifacts.
       - uses: actions/upload-artifact@v3
