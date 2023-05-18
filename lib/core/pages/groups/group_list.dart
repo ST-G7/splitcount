@@ -30,29 +30,15 @@ class _GroupListState extends State<GroupList> {
                 itemBuilder: (_, index) {
                   final group = snapshot.data![index];
 
-                  return Dismissible(
-                    key: Key(group.id.toString()),
-                    direction: DismissDirection.endToStart,
-                    background: Container(color: Colors.red),
-                    onDismissed: (direction) async {
-                      await context.read<IGroupService>().deleteGroup(group);
-                    },
-                    child: ListTile(
-                      leading: InitialsAvatar(text: group.name, radius: 20),
-                      title: Text(group.name),
-
-                      trailing: const Icon(Icons.chevron_right),
-                      subtitle: group.description != null
-                          ? Text(group.description!,
-                              overflow: TextOverflow.ellipsis)
-                          : null,
-
-                      onTap: () {
-                        context.push("/groups/${group.id}");
-                      },
-                      //trailing: Text(
-                      //    "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                    ),
+                  return ListTile(
+                    leading: InitialsAvatar(text: group.name, radius: 20),
+                    title: Text(group.name),
+                    trailing: const Icon(Icons.chevron_right),
+                    subtitle: group.description != null
+                        ? Text(group.description!,
+                            overflow: TextOverflow.ellipsis)
+                        : null,
+                    onTap: () => context.push("/groups/${group.id}"),
                   );
                 });
           } else {

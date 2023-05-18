@@ -44,7 +44,7 @@ dependencies:
   json_theme: ^5.0.2
   go_router: ^7.0.1
   share_plus: ^7.0.0
-
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter

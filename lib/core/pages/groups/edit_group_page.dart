@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -46,70 +49,135 @@ class _EditGroupPageState extends State<EditGroupPage> {
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.editGroup),
           ),
-          body: Form(
-            key: _formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    autofocus: true,
-                    controller: _nameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please provide a valid group name';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.groupName),
-                  ),
-                  TextFormField(
-                    controller: _descriptionController,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                        labelText:
-                            AppLocalizations.of(context)!.groupDescription),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: canSubmit
-                            ? () async {
-                                if (!_formKey.currentState!.validate()) {
-                                  return;
-                                }
-
-                                var group = widget.group;
-
-                                group.name = _nameController.text;
-                                group.description = _descriptionController.text;
-
-                                final navigator = Navigator.of(context);
-                                await groupService.updateGroup(group);
-
-                                navigator.pop(group);
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).primaryIconTheme.color,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          elevation: 1.0,
-                        ),
-                        child: Text(AppLocalizations.of(context)!.save),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        autofocus: true,
+                        controller: _nameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please provide a valid group name';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.groupName),
                       ),
+                      TextFormField(
+                        controller: _descriptionController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                            labelText:
+                                AppLocalizations.of(context)!.groupDescription),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: canSubmit
+                                ? () async {
+                                    if (!_formKey.currentState!.validate()) {
+                                      return;
+                                    }
+
+                                    var group = widget.group;
+
+                                    group.name = _nameController.text;
+                                    group.description =
+                                        _descriptionController.text;
+
+                                    final navigator = Navigator.of(context);
+                                    await groupService.updateGroup(group);
+
+                                    navigator.pop(group);
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor:
+                                  Theme.of(context).primaryIconTheme.color,
+                              backgroundColor: Theme.of(context).primaryColor,
+                              elevation: 1.0,
+                            ),
+                            child: Text(AppLocalizations.of(context)!.save),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.symmetric(vertical: 16.0),
+                  child: Container(
+                    height: 1,
+                    color: Theme.of(context).dividerColor,
+                  ),
+                ),
+                Text(
+                  "Danger Zone",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelLarge!
+                      .copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+                Container(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () =>
+                        _showConfirmDeleteGroupDialog(context, widget.group),
+                    icon: const Icon(Icons.delete),
+                    label: Text(AppLocalizations.of(context)!.deleteGroup),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                )
+              ],
             ),
           )),
     );
+  }
+
+  Future _showConfirmDeleteGroupDialog(
+    BuildContext context,
+    Group group,
+  ) async {
+    final groupService = context.read<IGroupService>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.deleteGroup),
+        content: const Text('Are you sure you want to delete the group?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await groupService.deleteGroup(group);
+      if (context.mounted) context.goNamed("/");
+    }
   }
 }
