@@ -10,13 +10,8 @@ class Group {
   Group(this.id, this.name, this.description, this.owner, this.members);
 
   factory Group.fromAppwriteDocument(Map<String, dynamic> data) {
-    var dynamicList = data["members"];
-    List<String> members = <String>[];
-
-    // Need to do it this way because document.data["members"] is of type List<dynamic>
-    for (var strEl in dynamicList) {
-      members.add(strEl.toString());
-    }
+    List<dynamic> membersData = data["members"];
+    List<String> members = membersData.cast<String>();
 
     return Group(data["\$id"], data["groupName"], data["description"],
         data["owner"], members);

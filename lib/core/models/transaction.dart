@@ -6,22 +6,26 @@ class Transaction {
 
   final String? emoji;
   final String user;
+  final List<String> users;
   final String title;
   final double amount;
   final String currency;
   final DateTime dateTime;
   final Group group;
 
-  Transaction(
-      this.id, this.user, this.title, this.amount, this.dateTime, this.group,
+  Transaction(this.id, this.user, this.users, this.title, this.amount,
+      this.dateTime, this.group,
       {this.emoji, this.currency = "€"});
 
   factory Transaction.fromAppwriteDocument(Map<String, dynamic> data) {
     var group = Group.fromAppwriteDocument(data["group"]);
+    List<dynamic> usersData = data["users"];
+    List<String> users = usersData.cast<String>();
 
     return Transaction(
         data["\$id"],
         data["user"],
+        users,
         data["title"],
         (data["amount"] as num).toDouble(),
         DateTime.parse(data["date"] as String),
