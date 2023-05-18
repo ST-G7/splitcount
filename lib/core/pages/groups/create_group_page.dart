@@ -22,9 +22,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   final members = <String>{};
 
+  late final FocusNode addUserTextfieldFocusNode;
+
   @override
   void initState() {
     super.initState();
+
+    addUserTextfieldFocusNode = FocusNode();
 
     controllerListener() {
       setState(() {
@@ -34,6 +38,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
     _nameController.addListener(controllerListener);
     _newMemberController.addListener(controllerListener);
+  }
+
+  @override
+  void dispose() {
+    addUserTextfieldFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -107,7 +117,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                     children: [
                       Expanded(
                         child: TextFormField(
+                          focusNode: addUserTextfieldFocusNode,
                           controller: _newMemberController,
+                          onFieldSubmitted: (_) => _addMember(),
                           decoration:
                               const InputDecoration(labelText: 'User Name'),
                         ),
@@ -175,6 +187,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       members.add(memberName);
       _newMemberController.clear();
     });
+
+    addUserTextfieldFocusNode.requestFocus();
   }
 
   _removeMember(String memberName) {
