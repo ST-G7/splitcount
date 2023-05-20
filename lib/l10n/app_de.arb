@@ -16,6 +16,7 @@
   "create": "Erstellen",
   "createGroup": "Gruppe erstellen",
   "editGroup": "Gruppe bearbeiten",
+  "deleteGroup": "Gruppe löschen",
   "groupName": "Name",
   "groupDescription": "Beschreibung",
   "save": "Speichern",

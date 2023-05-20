@@ -22,6 +22,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
   late final Group group;
   late String transactionUser;
+  late Map<String, bool> transactionUsers;
 
   bool canSubmit = false;
 
@@ -29,21 +30,22 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
   void initState() {
     super.initState();
 
-    controllerListener() {
-      setState(() {
-        canSubmit = _titleInput.text.isNotEmpty && _amountInput.text.isNotEmpty;
-      });
-    }
-
-    _titleInput.addListener(controllerListener);
-    _amountInput.addListener(controllerListener);
+    _titleInput.addListener(_evaluateSubmitStatus);
+    _amountInput.addListener(_evaluateSubmitStatus);
 
     group = widget.transactionService.getCurrentGroup();
     transactionUser = group.members.first;
+
+    transactionUsers = <String, bool>{};
+    for (final member in group.members) {
+      transactionUsers[member] = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final costs = _getCostPerUser();
+
     return Material(
       child: Scaffold(
           appBar: AppBar(
@@ -67,6 +69,13 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                     },
                     decoration: const InputDecoration(labelText: 'Title'),
                   ),
+                  DropdownButton<String>(
+                      icon: const Icon(Icons.person),
+                      isExpanded: true,
+                      value: transactionUser,
+                      items: _getDropDownMenuItems(group),
+                      onChanged: (selected) =>
+                          {setState(() => transactionUser = selected!)}),
                   TextFormField(
                     controller: _amountInput,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -85,13 +94,29 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                       labelText: 'Amount',
                     ),
                   ),
-                  DropdownButton<String>(
-                      icon: const Icon(Icons.person),
-                      isExpanded: true,
-                      value: transactionUser,
-                      items: _getDropDownMenuItems(group),
-                      onChanged: (selected) =>
-                          {setState(() => transactionUser = selected!)}),
+                  Expanded(
+                    child: ListView(
+                      children: transactionUsers.keys.map((String key) {
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          enabled: _amountInput.text.isNotEmpty,
+                          title: Text(key),
+                          subtitle: costs != null && transactionUsers[key]!
+                              ? Text("${costs.toStringAsFixed(2)}€")
+                              : null,
+                          value: transactionUsers[key]!,
+                          activeColor: Colors.pink,
+                          checkColor: Colors.white,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              transactionUsers[key] = value ?? false;
+                              _evaluateSubmitStatus();
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: SizedBox(
@@ -112,8 +137,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                       .createTransaction(Transaction(
                                           "",
                                           transactionUser,
+                                          _getSelectedTransactionUsers(),
                                           _titleInput.text,
-                                          double.parse(_amountInput.text),
+                                          _getAmount(),
                                           DateTime.now(),
                                           group));
 
@@ -153,5 +179,32 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
               child: Text(member),
             ))
         .toList();
+  }
+
+  List<String> _getSelectedTransactionUsers() {
+    return transactionUsers.keys
+        .where((key) => transactionUsers[key] == true)
+        .toList();
+  }
+
+  double _getAmount() {
+    return _amountInput.text.isNotEmpty ? double.parse(_amountInput.text) : 0;
+  }
+
+  double? _getCostPerUser() {
+    var userLength = _getSelectedTransactionUsers().length;
+    if (userLength == 0) {
+      return null;
+    }
+
+    return _getAmount() / userLength;
+  }
+
+  void _evaluateSubmitStatus() {
+    setState(() {
+      canSubmit = _titleInput.text.isNotEmpty &&
+          _amountInput.text.isNotEmpty &&
+          _getSelectedTransactionUsers().isNotEmpty;
+    });
   }
 }

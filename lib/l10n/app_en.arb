@@ -15,6 +15,7 @@
   "common": "Common",
   "create": "Create",
   "createGroup": "Create Group",
+  "deleteGroup": "Delete Group",
   "editGroup": "Edit Group",
   "groupName": "Name",
   "groupDescription": "Description",
