@@ -1,10 +1,6 @@
-import 'dart:convert';
-
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:splitcount/constants.dart';
 import 'package:splitcount/core/models/group.dart';
 
 import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
@@ -16,6 +12,7 @@ import 'package:splitcount/core/services/remote_transaction_service.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../models/summary.dart';
 
 class GroupDetailPage extends StatefulWidget {
   const GroupDetailPage(this._groupId, {super.key});
@@ -91,7 +88,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
             ),
             body: TabBarView(controller: _controller, children: [
               const TransactionList(),
-              GroupSummary(widget._groupId)
+              GroupSummaryList(widget._groupId)
             ]),
             floatingActionButton: _selectedTabIndex == 0
                 ? FloatingActionButton(
@@ -126,17 +123,18 @@ class _GroupDetailPageState extends State<GroupDetailPage>
   }
 }
 
-class GroupSummary extends StatefulWidget {
+class GroupSummaryList extends StatefulWidget {
   final String groupId;
 
-  const GroupSummary(this.groupId, {super.key});
+  const GroupSummaryList(this.groupId, {super.key});
 
   @override
-  State<GroupSummary> createState() => _GroupSummaryState();
+  State<GroupSummaryList> createState() => _GroupSummaryListState();
 }
 
-class _GroupSummaryState extends State<GroupSummary> {
-  String summaryText = "Loading ...";
+class _GroupSummaryListState extends State<GroupSummaryList> {
+  late Future<GroupSummary> groupSummary;
+  late Group group;
 
   @override
   void initState() {
@@ -145,24 +143,28 @@ class _GroupSummaryState extends State<GroupSummary> {
   }
 
   _computeSummary() async {
-    var function = Functions(appwriteClient);
-
-    var calculateSummaryId = "6468b30dbb01fb4f48a8";
-    var requestData = {"groupId": widget.groupId};
-    var jsonData = jsonEncode(requestData);
-
-    var result = await function.createExecution(
-        functionId: calculateSummaryId, data: jsonData);
-
-    setState(() {
-      summaryText = result.response;
-    });
+    var transactionService = context.read<ITransactionService>();
+    groupSummary = transactionService.getGroupSummary();
+    group = transactionService.getCurrentGroup();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(summaryText),
-    );
+    return FutureBuilder(
+        future: groupSummary,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            var summary = snapshot.data!;
+            var members = group.members;
+            return Column(
+              children: members
+                  .map((member) => Text(
+                      "$member ${(summary.saldo[member] ?? 0).toStringAsFixed(2)}€"))
+                  .toList(),
+            );
+          } else {
+            return const Center(child: Text("Loading..."));
+          }
+        });
   }
 }

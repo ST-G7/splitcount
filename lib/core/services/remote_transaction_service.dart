@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:rxdart/rxdart.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
@@ -7,16 +9,21 @@ import 'package:appwrite/appwrite.dart';
 
 import 'package:splitcount/constants.dart';
 
+import '../models/summary.dart';
+
 class RemoteTransactionService implements ITransactionService {
   static const String transactionCollectionId = "64327dbba600a97fc0fa";
+  static const String calculateSummaryFunctionId = "6468b30dbb01fb4f48a8";
 
   late Realtime realtime;
   late Databases databases;
   late Group group;
+  late Functions functions;
 
   RemoteTransactionService(this.group) {
     databases = Databases(appwriteClient);
     realtime = Realtime(appwriteClient);
+    functions = Functions(appwriteClient);
   }
 
   @override
@@ -90,5 +97,16 @@ class RemoteTransactionService implements ITransactionService {
   @override
   Group getCurrentGroup() {
     return group;
+  }
+
+  @override
+  Future<GroupSummary> getGroupSummary() async {
+    var requestData = {"groupId": group.id};
+    var jsonData = jsonEncode(requestData);
+
+    var result = await functions.createExecution(
+        functionId: calculateSummaryFunctionId, data: jsonData);
+
+    return GroupSummary.fromData(jsonDecode(result.response));
   }
 }
