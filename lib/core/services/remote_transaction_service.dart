@@ -31,7 +31,8 @@ class RemoteTransactionService implements ITransactionService {
           "amount": transaction.amount,
           "title": transaction.title,
           "date": transaction.dateTime.toIso8601String(),
-          "group": transaction.group.id
+          "group": transaction.group.id,
+          "users": transaction.users
         });
 
     return getTransactionById(document.$id);

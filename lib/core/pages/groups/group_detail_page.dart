@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:splitcount/constants.dart';
 import 'package:splitcount/core/models/group.dart';
 
 import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
@@ -85,11 +89,9 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                 ],
               ),
             ),
-            body: TabBarView(controller: _controller, children: const [
-              TransactionList(),
-              Center(
-                child: Text("Not yet implemented"),
-              )
+            body: TabBarView(controller: _controller, children: [
+              const TransactionList(),
+              GroupSummary(widget._groupId)
             ]),
             floatingActionButton: _selectedTabIndex == 0
                 ? FloatingActionButton(
@@ -121,5 +123,46 @@ class _GroupDetailPageState extends State<GroupDetailPage>
         group = updatedGroup;
       });
     }
+  }
+}
+
+class GroupSummary extends StatefulWidget {
+  final String groupId;
+
+  const GroupSummary(this.groupId, {super.key});
+
+  @override
+  State<GroupSummary> createState() => _GroupSummaryState();
+}
+
+class _GroupSummaryState extends State<GroupSummary> {
+  String summaryText = "Loading ...";
+
+  @override
+  void initState() {
+    super.initState();
+    _computeSummary();
+  }
+
+  _computeSummary() async {
+    var function = Functions(appwriteClient);
+
+    var calculateSummaryId = "6468b30dbb01fb4f48a8";
+    var requestData = {"groupId": widget.groupId};
+    var jsonData = jsonEncode(requestData);
+
+    var result = await function.createExecution(
+        functionId: calculateSummaryId, data: jsonData);
+
+    setState(() {
+      summaryText = result.response;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(summaryText),
+    );
   }
 }
