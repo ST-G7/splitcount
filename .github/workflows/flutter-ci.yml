@@ -57,7 +57,7 @@ jobs:
       # Flutter build for ios and macos
       - run: flutter build ios --no-tree-shake-icons --no-codesign
       - run: mkdir build/ios/iphoneos/Payload && cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload && zip -r Payload.ipa build/ios/iphoneos/Payload
-      - run: flutter build macos --no-tree-shake-icons --no-codesign
+      - run: flutter build macos --no-tree-shake-icons
 
       - uses: actions/upload-artifact@v3
         with:
