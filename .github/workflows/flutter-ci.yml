@@ -67,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
             name: splitcount-ios-ipa
-            path: build/ios/iphoneos/Payload.ipa
+            path: Payload.ipa
 
       - uses: actions/upload-artifact@v3
         with:
