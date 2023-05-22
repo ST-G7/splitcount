@@ -1,0 +1,21 @@
+{
+    "projectId": "642c3fa6c1557c18bdbf",
+    "projectName": "Splitcount",
+    "functions": [
+        {
+            "$id": "6468b30dbb01fb4f48a8",
+            "name": "CalculateSummary",
+            "runtime": "node-16.0",
+            "path": "functions/CalculateSummary",
+            "entrypoint": "src/index.js",
+            "ignore": [
+                "node_modules",
+                ".npm"
+            ],
+            "execute": [],
+            "events": [],
+            "schedule": "",
+            "timeout": 15
+        }
+    ]
+}

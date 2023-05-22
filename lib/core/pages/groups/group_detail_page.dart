@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
+import 'package:splitcount/core/pages/groups/group_summary_list_page.dart';
 
 import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
 import 'package:splitcount/core/pages/groups/edit_group_page.dart';
@@ -85,11 +86,9 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                 ],
               ),
             ),
-            body: TabBarView(controller: _controller, children: const [
-              TransactionList(),
-              Center(
-                child: Text("Not yet implemented"),
-              )
+            body: TabBarView(controller: _controller, children: [
+              const TransactionList(),
+              GroupSummaryList(widget._groupId)
             ]),
             floatingActionButton: _selectedTabIndex == 0
                 ? FloatingActionButton(

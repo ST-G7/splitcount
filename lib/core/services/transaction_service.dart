@@ -1,6 +1,8 @@
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 
+import '../models/summary.dart';
+
 abstract interface class ITransactionService {
   Group getCurrentGroup();
 
@@ -13,4 +15,6 @@ abstract interface class ITransactionService {
   Future<List<Transaction>> getTransactions();
 
   Stream<List<Transaction>> getLiveTransactions();
+
+  Future<GroupSummary> getGroupSummary();
 }

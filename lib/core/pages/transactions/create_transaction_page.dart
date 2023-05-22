@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
@@ -79,15 +78,16 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                   TextFormField(
                     controller: _amountInput,
                     keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: true),
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(
-                          RegExp('[0-9]+(,[0-9][0-9])?'))
-                    ],
+                        signed: true, decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a valid value';
                       }
+
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid value';
+                      }
+
                       return null;
                     },
                     decoration: const InputDecoration(
@@ -188,7 +188,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
   }
 
   double _getAmount() {
-    return _amountInput.text.isNotEmpty ? double.parse(_amountInput.text) : 0;
+    return _amountInput.text.isNotEmpty
+        ? double.tryParse(_amountInput.text) ?? 0
+        : 0;
   }
 
   double? _getCostPerUser() {
