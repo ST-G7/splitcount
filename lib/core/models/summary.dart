@@ -8,8 +8,14 @@ class GroupSummary {
 
     Map<String, double> saldos = {};
 
-    for (var s in saldosList) {
-      saldos[s["name"]] = s["saldo"];
+    for (var entry in saldosList) {
+      var dynamicSaldo = entry["saldo"];
+
+      saldos[entry["name"]] = switch (dynamicSaldo.runtimeType) {
+        double => dynamicSaldo,
+        int => (dynamicSaldo as int).toDouble(),
+        _ => 0
+      };
     }
 
     return GroupSummary(saldos);
