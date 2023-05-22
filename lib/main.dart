@@ -56,6 +56,9 @@ void main() async {
   Future<ThemeData> loadTheme(String name) async {
     final themeJson =
         jsonDecode(await rootBundle.loadString('assets/themes/$name'));
+
+    // Remove target platform and use native
+    themeJson["platform"] = null;
     return ThemeDecoder.decodeThemeData(themeJson)!;
   }
 
