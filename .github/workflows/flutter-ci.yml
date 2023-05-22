@@ -44,3 +44,32 @@ jobs:
         with:
           name: splitcount-web
           path: build/web/
+  build-ios-and-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Setup the flutter environment.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+      - run: flutter pub get
+
+      # Flutter build for ios and macos
+      - run: flutter build ios --no-tree-shake-icons
+      - run: mkdir build/ios/iphoneos/Payload && cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload && zip -r Payload.ipa build/ios/iphoneos/Payload
+      - run: flutter build macos --no-tree-shake-icons
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: splitcount-ios
+          path: build/ios/iphoneos/Runner.app
+
+      - uses: actions/upload-artifact@v3
+        with:
+            name: splitcount-ios-ipa
+            path: build/ios/iphoneos/Payload.ipa
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: splitcount-macos
+          path: build/macos/Build/Products/Release/Splitcount.app
