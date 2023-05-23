@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:splitcount/core/ui/initials_avatar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class GroupList extends StatefulWidget {
   const GroupList({super.key});
@@ -34,10 +35,12 @@ class _GroupListState extends State<GroupList> {
                     leading: InitialsAvatar(text: group.name, radius: 20),
                     title: Text(group.name),
                     trailing: const Icon(Icons.chevron_right),
-                    subtitle: group.description != null
-                        ? Text(group.description!,
+                    subtitle: group.description == null ||
+                            group.description!.isEmpty
+                        ? Text(AppLocalizations.of(context)!.noGroupDescription,
                             overflow: TextOverflow.ellipsis)
-                        : null,
+                        : Text(group.description!,
+                            overflow: TextOverflow.ellipsis),
                     onTap: () => context.push("/groups/${group.id}"),
                   );
                 });

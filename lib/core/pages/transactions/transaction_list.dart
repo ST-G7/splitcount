@@ -81,7 +81,7 @@ class _TransactionListState extends State<TransactionList> {
                         subtitle: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const Text("paid by"),
+                              Text(AppLocalizations.of(context)!.paidBy),
                               const SizedBox(width: 4),
                               InitialsAvatar(text: transaction.user, radius: 8),
                               const SizedBox(width: 2),

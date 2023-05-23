@@ -20,5 +20,21 @@
   "groupName": "Name",
   "groupDescription": "Beschreibung",
   "save": "Speichern",
-  "shareGroup": "Gruppe Teilen"
+  "shareGroup": "Gruppe Teilen",
+  "title": "Titel",
+  "titleError": "Bitte einen gültigen Titel angeben.",
+  "amount": "Wert",
+  "invalidValueError": "Bitte einen gültigen Wert angeben.",
+  "paidBy": "bezahlt von",
+  "users": "Nutzer",
+  "owner": "Besitzer",
+  "removeUser": "Entfernen",
+  "addUser": "Nutzer hinzufügen",
+  "userName": "Nutzer Name",
+  "invalidGroupName": "Bitte einen gültigen Gruppennamen wählen.",
+  "dangerZone": "Gefahren Zone",
+  "cancel": "Abbrechen",
+  "delete": "Löschen",
+  "confirmGroupDelete": "Sicher, dass die Gruppe gelöscht werden soll?",
+  "noGroupDescription": "Gruppe hat keine Beschreibung"
 }

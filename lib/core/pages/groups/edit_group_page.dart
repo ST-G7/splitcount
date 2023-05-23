@@ -62,7 +62,8 @@ class _EditGroupPageState extends State<EditGroupPage> {
                         controller: _nameController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please provide a valid group name';
+                            return AppLocalizations.of(context)!
+                                .invalidGroupName;
                           }
                           return null;
                         },
@@ -123,7 +124,7 @@ class _EditGroupPageState extends State<EditGroupPage> {
                   ),
                 ),
                 Text(
-                  "Danger Zone",
+                  AppLocalizations.of(context)!.dangerZone,
                   style: Theme.of(context)
                       .textTheme
                       .labelLarge!
@@ -159,15 +160,15 @@ class _EditGroupPageState extends State<EditGroupPage> {
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.deleteGroup),
-        content: const Text('Are you sure you want to delete the group?'),
+        content: Text(AppLocalizations.of(context)!.confirmGroupDelete),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),

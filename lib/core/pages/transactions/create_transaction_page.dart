@@ -62,11 +62,12 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                     controller: _titleInput,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please provide a valid title';
+                        return AppLocalizations.of(context)!.titleError;
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(labelText: 'Title'),
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.title),
                   ),
                   DropdownButton<String>(
                       icon: const Icon(Icons.person),
@@ -81,17 +82,17 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                         signed: true, decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a valid value';
+                        return AppLocalizations.of(context)!.invalidValueError;
                       }
 
                       if (double.tryParse(value) == null) {
-                        return 'Please enter a valid value';
+                        return AppLocalizations.of(context)!.invalidValueError;
                       }
 
                       return null;
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Amount',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.amount,
                     ),
                   ),
                   Expanded(
@@ -146,9 +147,12 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                          'Created ${createdTransaction.title}'),
+                                          AppLocalizations.of(context)!
+                                              .transactionCreated(
+                                                  createdTransaction.title)),
                                       action: SnackBarAction(
-                                          label: 'Undo',
+                                          label: AppLocalizations.of(context)!
+                                              .undo,
                                           onPressed: () async => {
                                                 await widget.transactionService
                                                     .deleteTransaction(
@@ -161,7 +165,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                 }
                               }
                             : null,
-                        child: const Text('Create Entry'),
+                        child: Text(
+                            AppLocalizations.of(context)!.createTransaction),
                       ),
                     ),
                   ),
