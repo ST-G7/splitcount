@@ -3,6 +3,7 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 
 class CreateTransactionPage extends StatefulWidget {
   final ITransactionService transactionService;
@@ -46,7 +47,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     final costs = _getCostPerUser();
 
     return Material(
-      child: Scaffold(
+      child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.createTransaction),
           ),

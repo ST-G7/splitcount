@@ -2,6 +2,7 @@
   "groups": "Gruppen",
   "transactions": "Transaktionen",
   "overview": "Übersicht",
+  "transactionCreated": "{title} erstellt",
   "transactionDeleted": "Transaktion {title} wurde gelöscht.",
   "undo": "Rückgängig",
   "noTransactions": "Keine Transaktionen",
@@ -36,5 +37,6 @@
   "cancel": "Abbrechen",
   "delete": "Löschen",
   "confirmGroupDelete": "Sicher, dass die Gruppe gelöscht werden soll?",
-  "noGroupDescription": "Gruppe hat keine Beschreibung"
+  "noGroupDescription": "Gruppe hat keine Beschreibung",
+  "noConnectionWarning": "Keine Verbindung. Einige Funktionen der App benötigen eine vorhandene Netzwerkverbindung."
 }

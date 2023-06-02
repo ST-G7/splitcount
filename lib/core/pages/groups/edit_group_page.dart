@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 
 class EditGroupPage extends StatefulWidget {
   final Group group;
@@ -43,7 +44,7 @@ class _EditGroupPageState extends State<EditGroupPage> {
     var groupService = context.read<IGroupService>();
 
     return Material(
-      child: Scaffold(
+      child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.editGroup),
           ),
@@ -176,7 +177,7 @@ class _EditGroupPageState extends State<EditGroupPage> {
 
     if (confirmed == true) {
       await groupService.deleteGroup(group);
-      if (context.mounted) context.goNamed("/");
+      if (context.mounted) context.go('/');
     }
   }
 }

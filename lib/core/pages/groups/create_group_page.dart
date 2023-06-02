@@ -4,6 +4,8 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../ui/connectivity_indicator_scaffold.dart';
+
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({super.key});
 
@@ -51,7 +53,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     var groupService = context.read<IGroupService>();
 
     return Material(
-      child: Scaffold(
+      child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.createGroup),
           ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:rxdart/rxdart.dart';
@@ -19,6 +20,8 @@ class RemoteTransactionService implements ITransactionService {
   late Databases databases;
   late Group group;
   late Functions functions;
+
+  RealtimeSubscription? _subscription;
 
   RemoteTransactionService(this.group) {
     databases = Databases(appwriteClient);
@@ -65,13 +68,13 @@ class RemoteTransactionService implements ITransactionService {
 
   @override
   Stream<List<Transaction>> getLiveTransactions() async* {
-    final subscription = realtime.subscribe([
+    _subscription ??= realtime.subscribe([
       'databases.$appwriteDatabaseId.collections.$transactionCollectionId.documents'
     ]);
 
-    yield* subscription.stream
+    yield* _subscription!.stream
         .asyncMap(_onHandleTransactionListChanged)
-        .startWith(await getTransactions());
+        .shareValueSeeded(await getTransactions());
   }
 
   @override
@@ -108,5 +111,9 @@ class RemoteTransactionService implements ITransactionService {
         functionId: calculateSummaryFunctionId, data: jsonData);
 
     return GroupSummary.fromData(jsonDecode(result.response));
+  }
+
+  dispose() {
+    _subscription?.close();
   }
 }

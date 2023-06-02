@@ -14,6 +14,8 @@ import 'package:splitcount/core/services/remote_transaction_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../ui/connectivity_indicator_scaffold.dart';
+
 class GroupDetailPage extends StatefulWidget {
   const GroupDetailPage(this._groupId, {super.key});
 
@@ -28,12 +30,16 @@ class _GroupDetailPageState extends State<GroupDetailPage>
   late TabController _controller;
   var _selectedTabIndex = 0;
 
-  late Future<Group> groupFuture;
+  Group? _group;
+  RemoteTransactionService? _remoteTransactionService;
 
   @override
   void initState() {
     super.initState();
-    groupFuture = context.read<IGroupService>().getGroupById(widget._groupId);
+    context
+        .read<IGroupService>()
+        .getGroupById(widget._groupId)
+        .then((group) => {setState(() => _onGroupLoaded(group))});
 
     _controller =
         TabController(length: 2, vsync: this, initialIndex: _selectedTabIndex);
@@ -42,70 +48,77 @@ class _GroupDetailPageState extends State<GroupDetailPage>
         }));
   }
 
+  _onGroupLoaded(Group group) {
+    _group = group;
+    _remoteTransactionService = RemoteTransactionService(group);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _remoteTransactionService?.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Group>(
-      future: groupFuture,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(title: const Text("")),
-            body: const Center(child: Text("Loading Group ...")),
-          );
-        }
+    if (_group == null || _remoteTransactionService == null) {
+      return ConnectivityIndiactorScaffold(
+        appBar: AppBar(title: const Text("")),
+        body: const Center(child: Text("Loading Group ...")),
+      );
+    }
 
-        var group = snapshot.data!;
-        var remoteTransactionService = RemoteTransactionService(group);
-        return Provider<ITransactionService>(
-          create: (_) => remoteTransactionService,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(group.name),
-              actions: [
-                IconButton(
-                    onPressed: () async {
-                      final link = kIsWeb
-                          ? Uri.base.toString()
-                          : 'https://splitcount.web.app/groups/${group.id}';
-                      return Share.share(link,
-                          subject: "${group.name} - Splitcount");
-                    },
-                    icon: const Icon(Icons.share),
-                    tooltip: AppLocalizations.of(context)!.shareGroup),
-                IconButton(
-                    icon: const Icon(Icons.edit_square),
-                    tooltip: AppLocalizations.of(context)!.settings,
-                    onPressed: () => _showGroupSettings(group))
-              ],
-              bottom: TabBar(
-                controller: _controller,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabs: <Tab>[
-                  Tab(text: AppLocalizations.of(context)!.transactions),
-                  Tab(text: AppLocalizations.of(context)!.overview),
-                ],
-              ),
-            ),
-            body: TabBarView(controller: _controller, children: [
-              const TransactionList(),
-              GroupSummaryList(widget._groupId)
-            ]),
-            floatingActionButton: _selectedTabIndex == 0
-                ? FloatingActionButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => CreateTransactionPage(
-                                remoteTransactionService)),
-                      );
-                    },
-                    child: const Icon(Icons.add),
-                  )
-                : null,
+    Group group = _group!;
+    ITransactionService transactionService = _remoteTransactionService!;
+
+    return Provider<ITransactionService>(
+      create: (_) => transactionService!,
+      child: ConnectivityIndiactorScaffold(
+        appBar: AppBar(
+          title: Text(group.name),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  final link = kIsWeb
+                      ? Uri.base.toString()
+                      : 'https://splitcount.web.app/groups/${group.id}';
+                  return Share.share(link,
+                      subject: "${group.name} - Splitcount");
+                },
+                icon: const Icon(Icons.share),
+                tooltip: AppLocalizations.of(context)!.shareGroup),
+            IconButton(
+                icon: const Icon(Icons.edit_square),
+                tooltip: AppLocalizations.of(context)!.settings,
+                onPressed: () => _showGroupSettings(group))
+          ],
+          bottom: TabBar(
+            controller: _controller,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: <Tab>[
+              Tab(text: AppLocalizations.of(context)!.transactions),
+              Tab(text: AppLocalizations.of(context)!.overview),
+            ],
           ),
-        );
-      },
+        ),
+        body: TabBarView(controller: _controller, children: [
+          const TransactionList(),
+          GroupSummaryList(widget._groupId)
+        ]),
+        floatingActionButton: _selectedTabIndex == 0
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            CreateTransactionPage(transactionService)),
+                  );
+                },
+                child: const Icon(Icons.add),
+              )
+            : null,
+      ),
     );
   }
 
