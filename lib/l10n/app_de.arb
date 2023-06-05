@@ -38,5 +38,8 @@
   "delete": "Löschen",
   "confirmGroupDelete": "Sicher, dass die Gruppe gelöscht werden soll?",
   "noGroupDescription": "Gruppe hat keine Beschreibung",
-  "noConnectionWarning": "Keine Verbindung. Einige Funktionen der App benötigen eine vorhandene Netzwerkverbindung."
+  "noConnectionWarning": "Keine Verbindung. Einige Funktionen der App benötigen eine vorhandene Netzwerkverbindung.",
+  "groupChooseIdentityText": "Sag uns wer du bist",
+  "groupContinueAsGuest": "Als Gast fortsetzen",
+  "me": "mir"
 }

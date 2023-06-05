@@ -17,4 +17,6 @@ abstract interface class ITransactionService {
   Stream<List<Transaction>> getLiveTransactions();
 
   Future<GroupSummary> getGroupSummary();
+
+  Stream<double> getSaldoOfUser(String member);
 }

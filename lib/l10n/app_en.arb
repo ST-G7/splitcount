@@ -38,5 +38,8 @@
   "delete": "Delete",
   "confirmGroupDelete": "Are you sure you want to delete the group?",
   "noGroupDescription": "Group has no description",
-  "noConnectionWarning": "No Connection. Some functions of the app require a network connection."
+  "noConnectionWarning": "No Connection. Some functions of the app require a network connection.",
+  "groupChooseIdentityText": "Tell us who you are",
+  "groupContinueAsGuest": "Continue as Guest",
+  "me": "me"
 }

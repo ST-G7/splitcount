@@ -45,6 +45,7 @@ dependencies:
   go_router: ^7.0.1
   share_plus: ^7.0.0
   flutter_offline: "^2.1.0"
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:

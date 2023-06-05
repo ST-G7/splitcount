@@ -4,8 +4,8 @@ import 'package:splitcount/core/pages/groups/create_group_page.dart';
 import 'package:splitcount/core/pages/groups/group_detail_page.dart';
 import 'package:splitcount/core/pages/settings_page.dart';
 import 'package:splitcount/core/services/group_service.dart';
-import 'package:splitcount/core/services/local_settings_service.dart';
-import 'package:splitcount/core/services/remote_group_service.dart';
+import 'package:splitcount/core/services/implementations/impl_group_service.dart';
+import 'package:splitcount/core/services/implementations/local_settings_service.dart';
 
 import 'package:splitcount/core/pages/groups/groups_overview_page.dart';
 import 'package:provider/provider.dart';
@@ -68,11 +68,14 @@ void main() async {
   var localSettingsService = LocalSettingsService();
   await localSettingsService.isInitialized;
 
+  var groupService = GroupService();
+
   runApp(
     MultiProvider(
       providers: [
         Provider<ISettingsService>(create: (_) => localSettingsService),
-        Provider<IGroupService>(create: (_) => RemoteGroupService()),
+        Provider<IGroupService>(create: (_) => groupService),
+        Provider<ILocalGroupInformationService>(create: (_) => groupService),
       ],
       child: MyApp(
         lightTheme: lightTheme,

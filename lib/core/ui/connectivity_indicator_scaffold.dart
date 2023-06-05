@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_offline/flutter_offline.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class ConnectivityIndiactorScaffold extends StatefulWidget {
+class ConnectivityIndiactorScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget? body;
   final Widget? floatingActionButton;
@@ -11,20 +11,13 @@ class ConnectivityIndiactorScaffold extends StatefulWidget {
       {super.key, this.appBar, this.body, this.floatingActionButton});
 
   @override
-  State<ConnectivityIndiactorScaffold> createState() =>
-      _ConnectivityIndiactorScaffoldState();
-}
-
-class _ConnectivityIndiactorScaffoldState
-    extends State<ConnectivityIndiactorScaffold> {
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: widget.key,
-      appBar: widget.appBar,
-      floatingActionButton: widget.floatingActionButton,
+      key: super.key,
+      appBar: appBar,
+      floatingActionButton: floatingActionButton,
       body: OfflineBuilder(
-        child: widget.body,
+        child: body,
         connectivityBuilder: (
           BuildContext context,
           ConnectivityResult connectivity,
@@ -34,8 +27,8 @@ class _ConnectivityIndiactorScaffoldState
 
           List<Widget> widgets = [];
 
-          if (widget.body != null) {
-            widgets.add(widget.body!);
+          if (body != null) {
+            widgets.add(body!);
           }
 
           if (!connected) {
