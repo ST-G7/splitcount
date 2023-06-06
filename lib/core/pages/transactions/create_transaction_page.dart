@@ -128,6 +128,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                         onPressed: canSubmit
                             ? () async {
                                 if (_formKey.currentState!.validate()) {
+                                  var appLocalizations =
+                                      AppLocalizations.of(context)!;
+
                                   final scaffoldMessenger =
                                       ScaffoldMessenger.of(context);
                                   final navigator = Navigator.of(context);
@@ -148,12 +151,10 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                          AppLocalizations.of(context)!
-                                              .transactionCreated(
-                                                  createdTransaction.title)),
+                                          appLocalizations.transactionCreated(
+                                              createdTransaction.title)),
                                       action: SnackBarAction(
-                                          label: AppLocalizations.of(context)!
-                                              .undo,
+                                          label: appLocalizations.undo,
                                           onPressed: () async => {
                                                 await widget.transactionService
                                                     .deleteTransaction(

@@ -84,7 +84,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
     ITransactionService transactionService = _remoteTransactionService!;
 
     return Provider<ITransactionService>(
-      create: (_) => transactionService!,
+      create: (_) => transactionService,
       child: ConnectivityIndiactorScaffold(
         appBar: AppBar(
           title: Text(group.name),
