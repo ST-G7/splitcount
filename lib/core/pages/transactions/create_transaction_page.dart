@@ -34,7 +34,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     _amountInput.addListener(_evaluateSubmitStatus);
 
     group = widget.transactionService.getCurrentGroup();
-    transactionUser = group.members.first;
+    transactionUser = group.localMember ?? group.members.first;
 
     transactionUsers = <String, bool>{};
     for (final member in group.members) {
@@ -105,7 +105,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                           title: Text(key),
                           subtitle: costs != null && transactionUsers[key]!
                               ? Text("${costs.toStringAsFixed(2)}€")
-                              : null,
+                              : Text("${0.toStringAsFixed(2)}€"),
                           value: transactionUsers[key]!,
                           activeColor: Colors.pink,
                           checkColor: Colors.white,
