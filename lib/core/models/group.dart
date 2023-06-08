@@ -7,7 +7,10 @@ class Group {
   String owner;
   List<String> members;
 
-  Group(this.id, this.name, this.description, this.owner, this.members);
+  String? localMember;
+
+  Group(this.id, this.name, this.description, this.owner, this.members,
+      {this.localMember});
 
   factory Group.fromAppwriteDocument(Map<String, dynamic> data) {
     List<dynamic> membersData = data["members"];

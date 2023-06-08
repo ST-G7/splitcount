@@ -11,3 +11,9 @@ abstract interface class IGroupService {
 
   Stream<List<Group>> getGroups();
 }
+
+abstract interface class ILocalGroupInformationService {
+  Future<void> setLocalGroupMember(Group group, String member);
+
+  Future<String?> getLocalGroupMember(Group group);
+}

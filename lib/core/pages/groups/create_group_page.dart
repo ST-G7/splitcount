@@ -4,6 +4,8 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../ui/connectivity_indicator_scaffold.dart';
+
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({super.key});
 
@@ -51,7 +53,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     var groupService = context.read<IGroupService>();
 
     return Material(
-      child: Scaffold(
+      child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.createGroup),
           ),
@@ -67,7 +69,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                     controller: _nameController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please provide a valid group name';
+                        return AppLocalizations.of(context)!.invalidGroupName;
                       }
                       return null;
                     },
@@ -82,9 +84,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         labelText:
                             AppLocalizations.of(context)!.groupDescription),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: Text("Users"),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(AppLocalizations.of(context)!.users),
                   ),
                   Flexible(
                     child: ListView.separated(
@@ -95,12 +97,15 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                           return ListTile(
                               contentPadding: const EdgeInsets.all(0),
                               title: Text(member),
-                              subtitle: index == 0 ? const Text("Owner") : null,
+                              subtitle: index == 0
+                                  ? Text(AppLocalizations.of(context)!.owner)
+                                  : null,
                               leading: index == 0
                                   ? const Icon(Icons.engineering)
                                   : const Icon(Icons.person),
                               trailing: ElevatedButton.icon(
-                                label: const Text("Remove"),
+                                label: Text(
+                                    AppLocalizations.of(context)!.removeUser),
                                 icon: const Icon(Icons.person_remove),
                                 onPressed: () => _removeMember(member),
                               ));
@@ -120,14 +125,15 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                           focusNode: addUserTextfieldFocusNode,
                           controller: _newMemberController,
                           onFieldSubmitted: (_) => _addMember(),
-                          decoration:
-                              const InputDecoration(labelText: 'User Name'),
+                          decoration: InputDecoration(
+                              labelText:
+                                  AppLocalizations.of(context)!.userName),
                         ),
                       ),
                       ElevatedButton.icon(
                         onPressed: _addMember,
                         icon: const Icon(Icons.person_add),
-                        label: const Text("Add User"),
+                        label: Text(AppLocalizations.of(context)!.addUser),
                       )
                     ],
                   ),

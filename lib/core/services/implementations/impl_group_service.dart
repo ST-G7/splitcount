@@ -3,34 +3,40 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/services/group_service.dart';
 
 import 'package:appwrite/appwrite.dart';
+import 'package:get_storage/get_storage.dart';
 
-import '../../constants.dart';
+import 'package:splitcount/constants.dart';
 
 const String currentUser = "David"; // hardcoded for now
 
-class RemoteGroupService implements IGroupService {
+class GroupService implements IGroupService, ILocalGroupInformationService {
   static const String groupCollectionId = "642e86754648f1898e7b";
 
-  late Realtime realtime;
-  late Databases databases;
+  late Realtime _realtime;
+  late Databases _databases;
+  GetStorage? _groupStorage;
 
-  RemoteGroupService() {
-    databases = Databases(appwriteClient);
-    realtime = Realtime(appwriteClient);
+  GroupService() {
+    _databases = Databases(appwriteClient);
+    _realtime = Realtime(appwriteClient);
   }
 
   @override
   Future<Group> getGroupById(String groupId) async {
-    var document = await databases.getDocument(
+    var document = await _databases.getDocument(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         documentId: groupId);
-    return Group.fromAppwriteDocument(document.data);
+
+    var group = Group.fromAppwriteDocument(document.data);
+    group.localMember = await getLocalGroupMember(group);
+
+    return group;
   }
 
   @override
   Future<Group> createGroup(Group group) async {
-    var document = await databases.createDocument(
+    var document = await _databases.createDocument(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         documentId: ID.unique(),
@@ -41,7 +47,7 @@ class RemoteGroupService implements IGroupService {
 
   @override
   Future<Group> updateGroup(Group group) async {
-    var document = await databases.updateDocument(
+    var document = await _databases.updateDocument(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         documentId: group.id,
@@ -51,7 +57,7 @@ class RemoteGroupService implements IGroupService {
 
   @override
   Future<void> deleteGroup(Group group) async {
-    await databases.deleteDocument(
+    await _databases.deleteDocument(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         documentId: group.id);
@@ -59,7 +65,7 @@ class RemoteGroupService implements IGroupService {
 
   @override
   Stream<List<Group>> getGroups() async* {
-    final subscription = realtime.subscribe([
+    final subscription = _realtime.subscribe([
       'databases.$appwriteDatabaseId.collections.$groupCollectionId.documents'
     ]);
 
@@ -69,7 +75,7 @@ class RemoteGroupService implements IGroupService {
   }
 
   Future<List<Group>> _getGroupList() async {
-    final groupDocuments = await databases.listDocuments(
+    final groupDocuments = await _databases.listDocuments(
         databaseId: appwriteDatabaseId,
         collectionId: groupCollectionId,
         queries: [
@@ -89,5 +95,24 @@ class RemoteGroupService implements IGroupService {
     return groupDocuments.documents
         .map((document) => Group.fromAppwriteDocument(document.data))
         .toList();
+  }
+
+  @override
+  Future<void> setLocalGroupMember(Group group, String member) async {
+    _groupStorage ??= await _createStorage();
+    await _groupStorage!.write(group.id, member);
+  }
+
+  @override
+  Future<String?> getLocalGroupMember(Group group) async {
+    _groupStorage ??= await _createStorage();
+    return _groupStorage!.read(group.id);
+  }
+
+  Future<GetStorage> _createStorage() async {
+    var name = "GroupStorage";
+    await GetStorage.init(name);
+    var storage = GetStorage(name);
+    return storage;
   }
 }

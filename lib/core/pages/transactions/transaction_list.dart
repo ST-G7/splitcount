@@ -18,6 +18,7 @@ class _TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
     var transactionService = context.read<ITransactionService>();
+    var group = transactionService.getCurrentGroup();
 
     return StreamBuilder<List<Transaction>>(
         stream: transactionService.getLiveTransactions(),
@@ -38,73 +39,94 @@ class _TransactionListState extends State<TransactionList> {
                 shrinkWrap: true,
                 itemBuilder: (_, index) {
                   final transaction = transactions[index];
+
+                  final paidByMe = transaction.user == group.localMember;
+                  final paidForMe = group.localMember != null &&
+                      group.members.contains(group.localMember);
+
                   return Dismissible(
-                    key: Key(transaction.id.toString()),
-                    direction: DismissDirection.endToStart,
-                    background: Container(color: Colors.red),
-                    onDismissed: (direction) async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      var transactionDeletedText = AppLocalizations.of(context)!
-                          .transactionDeleted(transaction.title);
+                      key: Key(transaction.id.toString()),
+                      direction: DismissDirection.endToStart,
+                      background: Container(color: Colors.red),
+                      onDismissed: (direction) async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        var transactionDeletedText =
+                            AppLocalizations.of(context)!
+                                .transactionDeleted(transaction.title);
 
-                      var undoText = AppLocalizations.of(context)!.undo;
+                        var undoText = AppLocalizations.of(context)!.undo;
 
-                      await transactionService.deleteTransaction(transaction);
+                        await transactionService.deleteTransaction(transaction);
 
-                      messenger.showSnackBar(SnackBar(
-                        content: Text(transactionDeletedText),
-                        action: SnackBarAction(
-                          label: undoText,
-                          onPressed: () async {
-                            await transactionService
-                                .createTransaction(transaction, index: index);
-                          },
-                        ),
-                      ));
-                    },
-                    child: ListTile(
-                        leading: Container(
-                            width: 40.0,
-                            height: 40.0,
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context).primaryColorLight),
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: Text(
-                                style: const TextStyle(fontSize: 22),
-                                transaction.emoji ?? "💲",
-                                textAlign: TextAlign.center,
-                              ),
-                            )),
-                        title: Text(transaction.title),
-                        subtitle: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text("paid by"),
-                              const SizedBox(width: 4),
-                              InitialsAvatar(text: transaction.user, radius: 8),
-                              const SizedBox(width: 2),
-                              Text(transaction.user)
-                            ]),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                                "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
-                            Text(
-                              _formatDate(transaction.dateTime),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        )),
-                  );
+                        messenger.showSnackBar(SnackBar(
+                          content: Text(transactionDeletedText),
+                          action: SnackBarAction(
+                            label: undoText,
+                            onPressed: () async {
+                              await transactionService
+                                  .createTransaction(transaction, index: index);
+                            },
+                          ),
+                        ));
+                      },
+                      child: _getListTile(transaction, paidByMe, paidForMe));
                 });
           } else {
             return const Center(child: CircularProgressIndicator());
           }
         });
+  }
+
+  ListTile _getListTile(
+      Transaction transaction, bool paidByMe, bool paidForMe) {
+    var subtitle =
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Text(AppLocalizations.of(context)!.paidBy),
+      const SizedBox(width: 4),
+      InitialsAvatar(text: transaction.user, radius: 8),
+      const SizedBox(width: 2),
+      Text(
+        paidByMe ? AppLocalizations.of(context)!.me : transaction.user,
+        style: paidByMe ? const TextStyle(fontWeight: FontWeight.bold) : null,
+      )
+    ]);
+
+    var saldoTextStyle = paidByMe
+        ? const TextStyle(color: Colors.green)
+        : paidForMe
+            ? const TextStyle(color: Colors.red)
+            : null;
+
+    return ListTile(
+        leading: Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).primaryColorLight),
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                style: const TextStyle(fontSize: 22),
+                transaction.emoji ?? "💲",
+                textAlign: TextAlign.center,
+              ),
+            )),
+        title: Text(transaction.title),
+        subtitle: subtitle,
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+                style: saldoTextStyle,
+                "${transaction.amount.toStringAsFixed(2)} ${transaction.currency}"),
+            Text(
+              _formatDate(transaction.dateTime),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ));
   }
 
   final DateFormat dayFormatter = DateFormat('MMMEd');

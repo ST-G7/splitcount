@@ -3,6 +3,7 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 
 class CreateTransactionPage extends StatefulWidget {
   final ITransactionService transactionService;
@@ -33,7 +34,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     _amountInput.addListener(_evaluateSubmitStatus);
 
     group = widget.transactionService.getCurrentGroup();
-    transactionUser = group.members.first;
+    transactionUser = group.localMember ?? group.members.first;
 
     transactionUsers = <String, bool>{};
     for (final member in group.members) {
@@ -46,7 +47,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     final costs = _getCostPerUser();
 
     return Material(
-      child: Scaffold(
+      child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.createTransaction),
           ),
@@ -62,11 +63,12 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                     controller: _titleInput,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please provide a valid title';
+                        return AppLocalizations.of(context)!.titleError;
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(labelText: 'Title'),
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.title),
                   ),
                   DropdownButton<String>(
                       icon: const Icon(Icons.person),
@@ -81,17 +83,17 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                         signed: true, decimal: true),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a valid value';
+                        return AppLocalizations.of(context)!.invalidValueError;
                       }
 
                       if (double.tryParse(value) == null) {
-                        return 'Please enter a valid value';
+                        return AppLocalizations.of(context)!.invalidValueError;
                       }
 
                       return null;
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Amount',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.amount,
                     ),
                   ),
                   Expanded(
@@ -103,7 +105,7 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                           title: Text(key),
                           subtitle: costs != null && transactionUsers[key]!
                               ? Text("${costs.toStringAsFixed(2)}€")
-                              : null,
+                              : Text("${0.toStringAsFixed(2)}€"),
                           value: transactionUsers[key]!,
                           activeColor: Colors.pink,
                           checkColor: Colors.white,
@@ -126,6 +128,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                         onPressed: canSubmit
                             ? () async {
                                 if (_formKey.currentState!.validate()) {
+                                  var appLocalizations =
+                                      AppLocalizations.of(context)!;
+
                                   final scaffoldMessenger =
                                       ScaffoldMessenger.of(context);
                                   final navigator = Navigator.of(context);
@@ -146,9 +151,10 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                          'Created ${createdTransaction.title}'),
+                                          appLocalizations.transactionCreated(
+                                              createdTransaction.title)),
                                       action: SnackBarAction(
-                                          label: 'Undo',
+                                          label: appLocalizations.undo,
                                           onPressed: () async => {
                                                 await widget.transactionService
                                                     .deleteTransaction(
@@ -161,7 +167,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                 }
                               }
                             : null,
-                        child: const Text('Create Entry'),
+                        child: Text(
+                            AppLocalizations.of(context)!.createTransaction),
                       ),
                     ),
                   ),

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:rxdart/rxdart.dart';
 import 'package:splitcount/core/models/group.dart';
+import 'package:splitcount/core/models/summary.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 
@@ -9,9 +11,7 @@ import 'package:appwrite/appwrite.dart';
 
 import 'package:splitcount/constants.dart';
 
-import '../models/summary.dart';
-
-class RemoteTransactionService implements ITransactionService {
+class TransactionService implements ITransactionService {
   static const String transactionCollectionId = "64327dbba600a97fc0fa";
   static const String calculateSummaryFunctionId = "6468b30dbb01fb4f48a8";
 
@@ -20,7 +20,9 @@ class RemoteTransactionService implements ITransactionService {
   late Group group;
   late Functions functions;
 
-  RemoteTransactionService(this.group) {
+  RealtimeSubscription? _subscription;
+
+  TransactionService(this.group) {
     databases = Databases(appwriteClient);
     realtime = Realtime(appwriteClient);
     functions = Functions(appwriteClient);
@@ -65,13 +67,13 @@ class RemoteTransactionService implements ITransactionService {
 
   @override
   Stream<List<Transaction>> getLiveTransactions() async* {
-    final subscription = realtime.subscribe([
+    _subscription ??= realtime.subscribe([
       'databases.$appwriteDatabaseId.collections.$transactionCollectionId.documents'
     ]);
 
-    yield* subscription.stream
+    yield* _subscription!.stream
         .asyncMap(_onHandleTransactionListChanged)
-        .startWith(await getTransactions());
+        .shareValueSeeded(await getTransactions());
   }
 
   @override
@@ -108,5 +110,20 @@ class RemoteTransactionService implements ITransactionService {
         functionId: calculateSummaryFunctionId, data: jsonData);
 
     return GroupSummary.fromData(jsonDecode(result.response));
+  }
+
+  dispose() {
+    try {
+      //_subscription?.close();
+    }
+    // ignore: empty_catches
+    catch (_) {}
+  }
+
+  @override
+  Stream<double> getSaldoOfUser(String member) {
+    return getLiveTransactions()
+        .asyncMap((_) => getGroupSummary())
+        .map((summary) => summary.saldo[member] ?? 0);
   }
 }

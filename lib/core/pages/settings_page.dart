@@ -12,7 +12,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class Language {
   final String key;
   final String title;
-  final String emoji = "🇩🇪";
   Language(this.key, this.title);
 }
 

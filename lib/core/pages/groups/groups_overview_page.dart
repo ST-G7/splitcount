@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:splitcount/core/pages/groups/group_list.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 
 class GroupOverviewPage extends StatefulWidget {
   const GroupOverviewPage({
@@ -16,7 +17,7 @@ class GroupOverviewPage extends StatefulWidget {
 class _GroupOverviewPageState extends State<GroupOverviewPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ConnectivityIndiactorScaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.groups),
         actions: [
