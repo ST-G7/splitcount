@@ -16,7 +16,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:splitcount/core/ui/choose_local_member_dialog.dart';
 
-import '../../ui/connectivity_indicator_scaffold.dart';
+import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 
 class GroupDetailPage extends StatefulWidget {
   const GroupDetailPage(this._groupId, {super.key});

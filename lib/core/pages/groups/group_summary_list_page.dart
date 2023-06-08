@@ -17,6 +17,8 @@ class _GroupSummaryListState extends State<GroupSummaryList> {
   late Future<GroupSummary> groupSummary;
   late Group group;
 
+  late List<String> members;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +29,8 @@ class _GroupSummaryListState extends State<GroupSummaryList> {
     var transactionService = context.read<ITransactionService>();
     groupSummary = transactionService.getGroupSummary();
     group = transactionService.getCurrentGroup();
+    members = group.members;
+    members.sort((a, b) => _groupMemberCompare(a, b));
   }
 
   @override
@@ -36,7 +40,6 @@ class _GroupSummaryListState extends State<GroupSummaryList> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var summary = snapshot.data!;
-            var members = group.members;
             return Column(
               children: members
                   .map(
@@ -51,15 +54,37 @@ class _GroupSummaryListState extends State<GroupSummaryList> {
         });
   }
 
+  int _groupMemberCompare(String memberA, String memberB) {
+    if (group.localMember == memberA) {
+      return -1;
+    }
+
+    if (group.localMember == memberB) {
+      return 1;
+    }
+
+    return memberA.compareTo(memberB);
+  }
+
   ListTile _getTileForMember(String name, double amount) {
-    var positive = amount >= 0;
-    var color = !positive ? Colors.red : Colors.green;
+    var color =
+        switch (amount) { > 0 => Colors.green, < 0 => Colors.red, _ => null };
+    var icon = switch (amount) {
+      > 0 => Icons.add,
+      < 0 => Icons.remove,
+      _ => Icons.done
+    };
     return ListTile(
       leading: Icon(
-        (positive ? Icons.add : Icons.remove),
+        icon,
         color: color,
       ),
-      title: Text(name),
+      title: Text(
+        name,
+        style: group.localMember == name
+            ? const TextStyle(fontWeight: FontWeight.bold)
+            : null,
+      ),
       trailing: Text(
         "${amount.toStringAsFixed(2)}€",
         style: TextStyle(color: color),
