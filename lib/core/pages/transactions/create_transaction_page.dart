@@ -3,7 +3,9 @@ import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:splitcount/core/ui/circular_icon_button.dart';
 import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
+import 'package:collection/collection.dart';
 
 class CreateTransactionPage extends StatefulWidget {
   final ITransactionService transactionService;
@@ -25,6 +27,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
   late Map<String, bool> transactionUsers;
 
   bool canSubmit = false;
+
+  int selectedCategoryIndex = 0;
 
   @override
   void initState() {
@@ -58,6 +62,30 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      runAlignment: WrapAlignment.center,
+                      children: transactionCategories
+                          .mapIndexed((index, category) => Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CircularIconButton(
+                                  category.icon,
+                                  active: index == selectedCategoryIndex,
+                                  size: 42,
+                                  onTap: () {
+                                    setState(() {
+                                      selectedCategoryIndex = index;
+                                    });
+                                  },
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   TextFormField(
                     autofocus: true,
                     controller: _titleInput,
@@ -146,7 +174,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                                           _titleInput.text,
                                           _getAmount(),
                                           DateTime.now(),
-                                          group));
+                                          group,
+                                          transactionCategories[
+                                              selectedCategoryIndex]));
 
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(

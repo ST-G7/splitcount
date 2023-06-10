@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/transaction.dart';
 import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
+import 'package:splitcount/core/ui/circular_icon_button.dart';
 import 'package:splitcount/core/ui/initials_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -98,20 +99,10 @@ class _TransactionListState extends State<TransactionList> {
             : null;
 
     return ListTile(
-        leading: Container(
-            width: 40.0,
-            height: 40.0,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context).primaryColorLight),
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                style: const TextStyle(fontSize: 22),
-                transaction.emoji ?? "💲",
-                textAlign: TextAlign.center,
-              ),
-            )),
+        leading: CircularIconButton(
+          transaction.category.icon,
+          size: 40,
+        ),
         title: Text(transaction.title),
         subtitle: subtitle,
         trailing: Column(

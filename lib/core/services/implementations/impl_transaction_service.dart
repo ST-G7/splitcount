@@ -41,7 +41,8 @@ class TransactionService implements ITransactionService {
           "title": transaction.title,
           "date": transaction.dateTime.toIso8601String(),
           "group": transaction.group.id,
-          "users": transaction.users
+          "users": transaction.users,
+          "category": transaction.category.value
         });
 
     return getTransactionById(document.$id);
