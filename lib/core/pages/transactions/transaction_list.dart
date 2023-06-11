@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:splitcount/core/models/transaction.dart';
-import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
+import 'package:splitcount/core/pages/transactions/transaction_editor_page.dart';
 import 'package:splitcount/core/services/transaction_service.dart';
 import 'package:splitcount/core/ui/circular_icon_button.dart';
 import 'package:splitcount/core/ui/initials_avatar.dart';
@@ -70,7 +70,8 @@ class _TransactionListState extends State<TransactionList> {
                           ),
                         ));
                       },
-                      child: _getListTile(transaction, paidByMe, paidForMe));
+                      child: _getListTile(transaction, paidByMe, paidForMe,
+                          transactionService));
                 });
           } else {
             return const Center(child: CircularProgressIndicator());
@@ -78,8 +79,8 @@ class _TransactionListState extends State<TransactionList> {
         });
   }
 
-  ListTile _getListTile(
-      Transaction transaction, bool paidByMe, bool paidForMe) {
+  ListTile _getListTile(Transaction transaction, bool paidByMe, bool paidForMe,
+      ITransactionService transactionService) {
     var subtitle =
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
       Text(AppLocalizations.of(context)!.paidBy),
@@ -105,6 +106,16 @@ class _TransactionListState extends State<TransactionList> {
         ),
         title: Text(transaction.title),
         subtitle: subtitle,
+        onTap: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => TransactionEditorPage(
+                          transactionService,
+                          editingTransaction: transaction,
+                        )),
+              )
+            },
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -174,7 +185,7 @@ class NoTransactionsPlaceholder extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (_) =>
-                          CreateTransactionPage(transactionService)),
+                          TransactionEditorPage(transactionService)),
                 );
               },
               child: Padding(

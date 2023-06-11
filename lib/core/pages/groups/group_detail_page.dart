@@ -5,7 +5,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:splitcount/core/models/group.dart';
 import 'package:splitcount/core/pages/groups/group_summary_list_page.dart';
 
-import 'package:splitcount/core/pages/transactions/create_transaction_page.dart';
+import 'package:splitcount/core/pages/transactions/transaction_editor_page.dart';
 import 'package:splitcount/core/pages/groups/edit_group_page.dart';
 import 'package:splitcount/core/pages/transactions/transaction_list.dart';
 import 'package:splitcount/core/services/group_service.dart';
@@ -137,7 +137,7 @@ class _GroupDetailPageState extends State<GroupDetailPage>
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            CreateTransactionPage(transactionService)),
+                            TransactionEditorPage(transactionService)),
                   );
                 },
                 child: const Icon(Icons.add),

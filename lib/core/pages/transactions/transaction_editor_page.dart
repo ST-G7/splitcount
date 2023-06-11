@@ -7,16 +7,18 @@ import 'package:splitcount/core/ui/circular_icon_button.dart';
 import 'package:splitcount/core/ui/connectivity_indicator_scaffold.dart';
 import 'package:collection/collection.dart';
 
-class CreateTransactionPage extends StatefulWidget {
+class TransactionEditorPage extends StatefulWidget {
   final ITransactionService transactionService;
+  final Transaction? editingTransaction;
 
-  const CreateTransactionPage(this.transactionService, {super.key});
+  const TransactionEditorPage(this.transactionService,
+      {this.editingTransaction, super.key});
 
   @override
-  State<CreateTransactionPage> createState() => _CreateTransactionPageState();
+  State<TransactionEditorPage> createState() => _TransactionEditorPageState();
 }
 
-class _CreateTransactionPageState extends State<CreateTransactionPage> {
+class _TransactionEditorPageState extends State<TransactionEditorPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _titleInput = TextEditingController();
@@ -30,6 +32,8 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
 
   int selectedCategoryIndex = 0;
 
+  late bool isEdit = widget.editingTransaction != null;
+
   @override
   void initState() {
     super.initState();
@@ -37,12 +41,29 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     _titleInput.addListener(_evaluateSubmitStatus);
     _amountInput.addListener(_evaluateSubmitStatus);
 
-    group = widget.transactionService.getCurrentGroup();
-    transactionUser = group.localMember ?? group.members.first;
-
     transactionUsers = <String, bool>{};
-    for (final member in group.members) {
-      transactionUsers[member] = true;
+
+    if (isEdit) {
+      final editingTransaction = widget.editingTransaction!;
+      group = editingTransaction.group;
+      transactionUser = editingTransaction.user;
+
+      _titleInput.text = editingTransaction.title;
+      _amountInput.text = editingTransaction.amount.toString();
+
+      for (final member in group.members) {
+        transactionUsers[member] = editingTransaction.users.contains(member);
+      }
+
+      selectedCategoryIndex = transactionCategories
+          .indexWhere((cat) => cat.value == editingTransaction.category.value);
+    } else {
+      group = widget.transactionService.getCurrentGroup();
+      transactionUser = group.localMember ?? group.members.first;
+
+      for (final member in group.members) {
+        transactionUsers[member] = true;
+      }
     }
   }
 
@@ -53,7 +74,9 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
     return Material(
       child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.createTransaction),
+            title: Text(isEdit
+                ? AppLocalizations.of(context)!.editTransaction
+                : AppLocalizations.of(context)!.createTransaction),
           ),
           body: Form(
             key: _formKey,
@@ -153,52 +176,10 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: canSubmit
-                            ? () async {
-                                if (_formKey.currentState!.validate()) {
-                                  var appLocalizations =
-                                      AppLocalizations.of(context)!;
-
-                                  final scaffoldMessenger =
-                                      ScaffoldMessenger.of(context);
-                                  final navigator = Navigator.of(context);
-
-                                  final group = widget.transactionService
-                                      .getCurrentGroup();
-                                  final createdTransaction = await widget
-                                      .transactionService
-                                      .createTransaction(Transaction(
-                                          "",
-                                          transactionUser,
-                                          _getSelectedTransactionUsers(),
-                                          _titleInput.text,
-                                          _getAmount(),
-                                          DateTime.now(),
-                                          group,
-                                          transactionCategories[
-                                              selectedCategoryIndex]));
-
-                                  scaffoldMessenger.showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          appLocalizations.transactionCreated(
-                                              createdTransaction.title)),
-                                      action: SnackBarAction(
-                                          label: appLocalizations.undo,
-                                          onPressed: () async => {
-                                                await widget.transactionService
-                                                    .deleteTransaction(
-                                                        createdTransaction)
-                                              }),
-                                    ),
-                                  );
-
-                                  navigator.pop();
-                                }
-                              }
-                            : null,
-                        child: Text(
-                            AppLocalizations.of(context)!.createTransaction),
+                        onPressed: canSubmit ? () => _onSubmit() : null,
+                        child: Text(isEdit
+                            ? AppLocalizations.of(context)!.editTransaction
+                            : AppLocalizations.of(context)!.createTransaction),
                       ),
                     ),
                   ),
@@ -206,6 +187,71 @@ class _CreateTransactionPageState extends State<CreateTransactionPage> {
               ),
             ),
           )),
+    );
+  }
+
+  _onSubmit() async {
+    if (_formKey.currentState!.validate()) {
+      final navigator = Navigator.of(context);
+
+      final transaction = Transaction(
+          widget.editingTransaction?.id ?? "",
+          transactionUser,
+          _getSelectedTransactionUsers(),
+          _titleInput.text,
+          _getAmount(),
+          widget.editingTransaction?.dateTime ?? DateTime.now(),
+          group,
+          transactionCategories[selectedCategoryIndex]);
+
+      if (!isEdit) {
+        await _createTransaction(transaction);
+      } else {
+        await _editTransaction(transaction);
+      }
+
+      navigator.pop();
+    }
+  }
+
+  _createTransaction(Transaction transaction) async {
+    var appLocalizations = AppLocalizations.of(context)!;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final createdTransaction =
+        await widget.transactionService.createTransaction(transaction);
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content:
+            Text(appLocalizations.transactionCreated(createdTransaction.title)),
+        action: SnackBarAction(
+            label: appLocalizations.undo,
+            onPressed: () async => {
+                  await widget.transactionService
+                      .deleteTransaction(createdTransaction)
+                }),
+      ),
+    );
+  }
+
+  _editTransaction(Transaction transaction) async {
+    var appLocalizations = AppLocalizations.of(context)!;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final editedTransaction =
+        await widget.transactionService.editTransaction(transaction);
+    final previousTransaction = widget.editingTransaction;
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content:
+            Text(appLocalizations.transactionEdited(editedTransaction.title)),
+        action: SnackBarAction(
+            label: appLocalizations.undo,
+            onPressed: () async => {
+                  await widget.transactionService
+                      .editTransaction(previousTransaction!)
+                }),
+      ),
     );
   }
 

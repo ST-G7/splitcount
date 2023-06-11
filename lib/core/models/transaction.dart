@@ -3,23 +3,27 @@ import 'package:splitcount/core/models/group.dart';
 
 class TransactionCategory {
   final IconData icon;
+  final String name;
   final String? value;
 
-  TransactionCategory(this.value, this.icon);
+  TransactionCategory(this.name, this.value, this.icon);
 }
 
 final defaultTransactionCategory =
-    TransactionCategory(null, Icons.paid_rounded);
+    TransactionCategory("Default", null, Icons.paid_rounded);
 
 final List<TransactionCategory> transactionCategories = [
   defaultTransactionCategory,
-  TransactionCategory("Shopping", Icons.shopping_cart_rounded),
-  TransactionCategory("Gift", Icons.redeem_rounded),
-  TransactionCategory("Sport", Icons.fitness_center_rounded),
-  TransactionCategory("Entertainment", Icons.sports_esports_rounded),
-  TransactionCategory("Transportation", Icons.directions_car_rounded),
-  TransactionCategory("Food", Icons.restaurant_rounded),
-  TransactionCategory("Ticket", Icons.local_activity_rounded),
+  TransactionCategory("Shopping", "shopping", Icons.shopping_cart_rounded),
+  TransactionCategory("Gift", "gift", Icons.redeem_rounded),
+  TransactionCategory("Sport", "sport", Icons.fitness_center_rounded),
+  TransactionCategory("Home", "home", Icons.house_rounded),
+  TransactionCategory(
+      "Entertainment", "entertainment", Icons.sports_esports_rounded),
+  TransactionCategory(
+      "Transportation", "transportation", Icons.directions_car_rounded),
+  TransactionCategory("Food", "food", Icons.restaurant_rounded),
+  TransactionCategory("Ticket", "ticket", Icons.local_activity_rounded),
 ];
 
 class Transaction {
