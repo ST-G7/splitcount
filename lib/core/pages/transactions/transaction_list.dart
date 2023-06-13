@@ -50,25 +50,8 @@ class _TransactionListState extends State<TransactionList> {
                       direction: DismissDirection.endToStart,
                       background: Container(color: Colors.red),
                       onDismissed: (direction) async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        var transactionDeletedText =
-                            AppLocalizations.of(context)!
-                                .transactionDeleted(transaction.title);
-
-                        var undoText = AppLocalizations.of(context)!.undo;
-
-                        await transactionService.deleteTransaction(transaction);
-
-                        messenger.showSnackBar(SnackBar(
-                          content: Text(transactionDeletedText),
-                          action: SnackBarAction(
-                            label: undoText,
-                            onPressed: () async {
-                              await transactionService
-                                  .createTransaction(transaction, index: index);
-                            },
-                          ),
-                        ));
+                        await _deleteTransaction(
+                            transactionService, transaction);
                       },
                       child: _getListTile(transaction, paidByMe, paidForMe,
                           transactionService));
@@ -77,6 +60,27 @@ class _TransactionListState extends State<TransactionList> {
             return const Center(child: CircularProgressIndicator());
           }
         });
+  }
+
+  _deleteTransaction(
+      ITransactionService transactionService, Transaction transaction) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var transactionDeletedText =
+        AppLocalizations.of(context)!.transactionDeleted(transaction.title);
+
+    var undoText = AppLocalizations.of(context)!.undo;
+
+    await transactionService.deleteTransaction(transaction);
+
+    messenger.showSnackBar(SnackBar(
+      content: Text(transactionDeletedText),
+      action: SnackBarAction(
+        label: undoText,
+        onPressed: () async {
+          await transactionService.createTransaction(transaction);
+        },
+      ),
+    ));
   }
 
   ListTile _getListTile(Transaction transaction, bool paidByMe, bool paidForMe,

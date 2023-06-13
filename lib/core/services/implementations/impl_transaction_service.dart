@@ -29,8 +29,7 @@ class TransactionService implements ITransactionService {
   }
 
   @override
-  Future<Transaction> createTransaction(Transaction transaction,
-      {int? index}) async {
+  Future<Transaction> createTransaction(Transaction transaction) async {
     var document = await databases.createDocument(
         databaseId: appwriteDatabaseId,
         collectionId: transactionCollectionId,
