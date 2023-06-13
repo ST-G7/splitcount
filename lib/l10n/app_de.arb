@@ -10,6 +10,7 @@
   "groupNoTransactions": "Gruppe {group} hat noch keine Transaktionen.",
   "createTransaction": "Transaktion erstellen",
   "editTransaction": "Transaktion bearbeiten",
+  "deleteTransaction": "Transaktion löschen",
   "settings": "Einstellungen",
   "language": "Sprache",
   "languages": "Sprachen",

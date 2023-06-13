@@ -8,7 +8,7 @@ abstract interface class ITransactionService {
 
   Future<Transaction> getTransactionById(String id);
 
-  Future<Transaction> createTransaction(Transaction transaction, {int? index});
+  Future<Transaction> createTransaction(Transaction transaction);
 
   Future<Transaction> editTransaction(Transaction transaction);
 

@@ -71,6 +71,142 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
   Widget build(BuildContext context) {
     final costs = _getCostPerUser();
 
+    final columnChildren = [
+      Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
+          children: transactionCategories
+              .mapIndexed((index, category) => Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CircularIconButton(
+                      category.icon,
+                      active: index == selectedCategoryIndex,
+                      size: 42,
+                      onTap: () {
+                        setState(() {
+                          selectedCategoryIndex = index;
+                        });
+                      },
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+      const SizedBox(
+        height: 8,
+      ),
+      TextFormField(
+        autofocus: true,
+        controller: _titleInput,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return AppLocalizations.of(context)!.titleError;
+          }
+          return null;
+        },
+        decoration:
+            InputDecoration(labelText: AppLocalizations.of(context)!.title),
+      ),
+      DropdownButton<String>(
+          icon: const Icon(Icons.person),
+          isExpanded: true,
+          value: transactionUser,
+          items: _getDropDownMenuItems(group),
+          onChanged: (selected) =>
+              {setState(() => transactionUser = selected!)}),
+      TextFormField(
+        controller: _amountInput,
+        keyboardType:
+            const TextInputType.numberWithOptions(signed: true, decimal: true),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return AppLocalizations.of(context)!.invalidValueError;
+          }
+
+          if (double.tryParse(value) == null) {
+            return AppLocalizations.of(context)!.invalidValueError;
+          }
+
+          return null;
+        },
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.amount,
+        ),
+      ),
+      Expanded(
+        child: ListView(
+          children: transactionUsers.keys.map((String key) {
+            return CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              enabled: _amountInput.text.isNotEmpty,
+              title: Text(key),
+              subtitle: costs != null && transactionUsers[key]!
+                  ? Text("${costs.toStringAsFixed(2)}€")
+                  : Text("${0.toStringAsFixed(2)}€"),
+              value: transactionUsers[key]!,
+              activeColor: Colors.pink,
+              checkColor: Colors.white,
+              onChanged: (bool? value) {
+                setState(() {
+                  transactionUsers[key] = value ?? false;
+                  _evaluateSubmitStatus();
+                });
+              },
+            );
+          }).toList(),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: canSubmit ? () => _onSubmit() : null,
+            child: Text(isEdit
+                ? AppLocalizations.of(context)!.editTransaction
+                : AppLocalizations.of(context)!.createTransaction),
+          ),
+        ),
+      ),
+    ];
+
+    if (isEdit) {
+      final dangerZone = [
+        Padding(
+          padding: const EdgeInsetsDirectional.symmetric(vertical: 16.0),
+          child: Container(
+            height: 1,
+            color: Theme.of(context).dividerColor,
+          ),
+        ),
+        Text(
+          AppLocalizations.of(context)!.dangerZone,
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge!
+              .copyWith(color: Theme.of(context).colorScheme.error),
+        ),
+        Container(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            onPressed: () => _deleteTransaction(
+                widget.transactionService, widget.editingTransaction!),
+            icon: const Icon(Icons.delete),
+            label: Text(AppLocalizations.of(context)!.deleteTransaction),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        )
+      ];
+      columnChildren.addAll(dangerZone);
+    }
+
     return Material(
       child: ConnectivityIndiactorScaffold(
           appBar: AppBar(
@@ -83,111 +219,34 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      runAlignment: WrapAlignment.center,
-                      children: transactionCategories
-                          .mapIndexed((index, category) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CircularIconButton(
-                                  category.icon,
-                                  active: index == selectedCategoryIndex,
-                                  size: 42,
-                                  onTap: () {
-                                    setState(() {
-                                      selectedCategoryIndex = index;
-                                    });
-                                  },
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  TextFormField(
-                    autofocus: true,
-                    controller: _titleInput,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(context)!.titleError;
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.title),
-                  ),
-                  DropdownButton<String>(
-                      icon: const Icon(Icons.person),
-                      isExpanded: true,
-                      value: transactionUser,
-                      items: _getDropDownMenuItems(group),
-                      onChanged: (selected) =>
-                          {setState(() => transactionUser = selected!)}),
-                  TextFormField(
-                    controller: _amountInput,
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: true, decimal: true),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(context)!.invalidValueError;
-                      }
-
-                      if (double.tryParse(value) == null) {
-                        return AppLocalizations.of(context)!.invalidValueError;
-                      }
-
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.amount,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: transactionUsers.keys.map((String key) {
-                        return CheckboxListTile(
-                          contentPadding: EdgeInsets.zero,
-                          enabled: _amountInput.text.isNotEmpty,
-                          title: Text(key),
-                          subtitle: costs != null && transactionUsers[key]!
-                              ? Text("${costs.toStringAsFixed(2)}€")
-                              : Text("${0.toStringAsFixed(2)}€"),
-                          value: transactionUsers[key]!,
-                          activeColor: Colors.pink,
-                          checkColor: Colors.white,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              transactionUsers[key] = value ?? false;
-                              _evaluateSubmitStatus();
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: canSubmit ? () => _onSubmit() : null,
-                        child: Text(isEdit
-                            ? AppLocalizations.of(context)!.editTransaction
-                            : AppLocalizations.of(context)!.createTransaction),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: columnChildren),
             ),
           )),
     );
+  }
+
+  _deleteTransaction(
+      ITransactionService transactionService, Transaction transaction) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var transactionDeletedText =
+        AppLocalizations.of(context)!.transactionDeleted(transaction.title);
+
+    var undoText = AppLocalizations.of(context)!.undo;
+    final navigator = Navigator.of(context);
+
+    await transactionService.deleteTransaction(transaction);
+
+    navigator.pop();
+    messenger.showSnackBar(SnackBar(
+      content: Text(transactionDeletedText),
+      action: SnackBarAction(
+        label: undoText,
+        onPressed: () async {
+          await transactionService.createTransaction(transaction);
+        },
+      ),
+    ));
   }
 
   _onSubmit() async {
