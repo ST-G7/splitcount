@@ -10,6 +10,8 @@ abstract interface class ITransactionService {
 
   Future<Transaction> createTransaction(Transaction transaction, {int? index});
 
+  Future<Transaction> editTransaction(Transaction transaction);
+
   Future<void> deleteTransaction(Transaction transaction);
 
   Future<List<Transaction>> getTransactions();

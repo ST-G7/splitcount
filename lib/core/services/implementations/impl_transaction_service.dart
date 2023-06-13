@@ -41,7 +41,27 @@ class TransactionService implements ITransactionService {
           "title": transaction.title,
           "date": transaction.dateTime.toIso8601String(),
           "group": transaction.group.id,
-          "users": transaction.users
+          "users": transaction.users,
+          "category": transaction.category.value
+        });
+
+    return getTransactionById(document.$id);
+  }
+
+  @override
+  Future<Transaction> editTransaction(Transaction transaction) async {
+    var document = await databases.updateDocument(
+        databaseId: appwriteDatabaseId,
+        collectionId: transactionCollectionId,
+        documentId: transaction.id,
+        data: {
+          "user": transaction.user,
+          "amount": transaction.amount,
+          "title": transaction.title,
+          "date": transaction.dateTime.toIso8601String(),
+          "group": transaction.group.id,
+          "users": transaction.users,
+          "category": transaction.category.value
         });
 
     return getTransactionById(document.$id);
