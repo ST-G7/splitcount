@@ -1,6 +1,6 @@
-# splitcount
+# SplitCount
 
-A new Flutter project.
+The easy way to share expenses!
 
 ## Getting Started
 
