@@ -1,4 +1,4 @@
-# SplitCount
+# Splitcount
 
 The easy way to share expenses!
 
