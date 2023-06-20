@@ -20,8 +20,3 @@ With Splitcount you can create, manage and share transactions among multiple use
 - Multi language support: The application is available in English and German
 - Dark and Light mode
 - Transaction categories: Tag your transaction with a suiting category
-
-<p align="center">
-<img src="./misc/images/transactions-dark.png" height="300px" >
-</p>
-
