@@ -1,16 +1,22 @@
+
+<p align="center">
+<img src="./misc/images/logo.png" width="128px">
+</p>
+
 # Splitcount
 
-The easy way to share expenses!
+> The easy way to share expenses!
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+With Splitcount you can create, manage and share transactions among multiple users in a group. Splitcount computes the saldo of each user and listes the individual expenses in a userfriendly way.
 
-A few resources to get you started if this is your first Flutter project:
+![Splitcount screenshots](/misc/images/combined-screenshots.png)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Splitcount Features
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Multiple Groups can contain individual transactions for different users
+- Data is persisted on Splitcounts servers
+- Multi platform support: Splitcount supports Android, iOS, Windows, macOS and Web
+- Multi language support: The application is available in English and German
+- Dark and Light mode
+- Transaction categories: Tag your transaction with a suiting category
