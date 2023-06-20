@@ -1,11 +1,16 @@
+
+<p align="center">
+<img src="./misc/images/logo.png" width="128px">
+</p>
+
 # Splitcount
 
 > The easy way to share expenses!
 
 
-![Splitcount screenshots](/misc/images/combined-screenshots.png)
-
 With Splitcount you can create, manage and share transactions among multiple users in a group. Splitcount computes the saldo of each user and listes the individual expenses in a userfriendly way.
+
+![Splitcount screenshots](/misc/images/combined-screenshots.png)
 
 ### Splitcount Features
 
@@ -16,6 +21,4 @@ With Splitcount you can create, manage and share transactions among multiple use
 - Dark and Light mode
 - Transaction categories: Tag your transaction with a suiting category
 
-
 ![Splitcount screenshots](/misc/images/transactions-dark.png)
-
