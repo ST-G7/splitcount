@@ -22,6 +22,6 @@ With Splitcount you can create, manage and share transactions among multiple use
 - Transaction categories: Tag your transaction with a suiting category
 
 <p align="center">
-<img src="./misc/images/transactions-dark.png" width="60%">
+<img src="./misc/images/transactions-dark.png" height="300px" >
 </p>
 
