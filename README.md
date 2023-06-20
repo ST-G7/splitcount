@@ -21,4 +21,7 @@ With Splitcount you can create, manage and share transactions among multiple use
 - Dark and Light mode
 - Transaction categories: Tag your transaction with a suiting category
 
-![Splitcount screenshots](/misc/images/transactions-dark.png)
+<p align="center">
+<img src="./misc/images/transactions-dark.png" width="60%">
+</p>
+
